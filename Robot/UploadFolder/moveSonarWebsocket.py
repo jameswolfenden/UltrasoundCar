@@ -32,15 +32,15 @@ while inPipe:
 #    car.servo.set_angle(90)
     time.sleep(10)
 #    car.move("stop")
-    list_tmp = []
+    ws.send_data_string("[")
     for angle in range(90, -91, -10):
 #        car.servo.set_angle(angle)
 #        time.sleep(0.075)
         distance = car.sonar.get_distance()
-        list_tmp.append(round(distance, 3))
         if angle==0 and distance<10:
             inPipe = False
-    ws.send_data_string(str(list_tmp)[1:-1])
+        ws.send_data_string(str(round(distance, 3)))
+    ws.send_data_string("]")
 
 ws.send_data_string("stop")
 car.servo.set_angle(0)

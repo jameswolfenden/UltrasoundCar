@@ -129,7 +129,6 @@ class WS_Server():
         else:
             try:
                 print("on revceive: %s" % receive)
-                self.send_data_string("amongus amongus amongus amongus amongus amongus amongus amongus amongus amongus amongus amongus amongus amongus amongus amongus amongus!")
                 #data = json.loads(receive)
                 #if isinstance(data, str):
                 #    data = json.loads(data)
