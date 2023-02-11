@@ -1,7 +1,7 @@
 #machine.reset()
 import pico_4wdNew as car
 import time
-from ws import WS_Server
+# from ws import WS_Server
 
 
 NAME = 'my_4wd_car'
@@ -14,9 +14,9 @@ PASSWORD = "12345678"
 def on_receive(data):
     print(data)
 
-ws = WS_Server(name=NAME, mode=WIFI_MODE, ssid=SSID, password=PASSWORD)
-ws.on_receive = on_receive
-ws.start()
+# ws = WS_Server(name=NAME, mode=WIFI_MODE, ssid=SSID, password=PASSWORD)
+# ws.on_receive = on_receive
+# ws.start()
 
 
 time.sleep(2)
@@ -31,14 +31,14 @@ all_data = []
 inPipe = True
 
 
-car.move("forward", 1)
-time.sleep(0.5)
-car.move("stop")
+# car.move("forward", 1)
+# time.sleep(0.1)
+# car.move("stop")
 
 car.v_servo.set_angle(0)
 car.h_servo.set_angle(0)
 
-time.sleep(1)
+time.sleep(4)
 
 
 while inPipe:
@@ -92,23 +92,23 @@ while inPipe:
         dist1.append(dist12)
         dist12.append(round(distance1, 3))
                 
-        if angle == 0 and distance1 > 10:
-            car.move("forward", 10)
-            time.sleep(0.1)
-            car.move("stop")
+        # if angle == 0 and distance1 > 10:
+        #     car.move("forward", 10)
+        #     time.sleep(0.1)
+        #     car.move("stop")
                 
-        elif angle < -85 and distance>45: 
-            car.move("right", 4)
-            time.sleep(0.3)
-            car.move("stop")
+        # elif angle < -85 and distance>45: 
+        #     car.move("right", 4)
+        #     time.sleep(0.3)
+        #     car.move("stop")
                 
-        elif angle >85 and distance>45:
-            car.move("right", 4)
-            time.sleep(0.3)
-            car.move("stop")
+        # elif angle >85 and distance>45:
+        #     car.move("right", 4)
+        #     time.sleep(0.3)
+        #     car.move("stop")
                 
-        else:
-            inPipe = False
+        # else:
+        #     inPipe = False
 
 
 # Write Files

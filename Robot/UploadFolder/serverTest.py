@@ -20,7 +20,7 @@ send='AT+CWMODE=3'
 uart.write(send+'\r\n')
 time.sleep(1)
 #Set SoftAP name
-send='AT+CWSAP="pos_softap",""'
+send='AT+CWSAP="ultrasound robot","password123",5,3'
 uart.write(send+'\r\n')
 time.sleep(1)
 res=uartSerialRxMonitor(send)
