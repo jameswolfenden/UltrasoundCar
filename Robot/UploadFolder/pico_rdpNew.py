@@ -1,4 +1,4 @@
-from machine import Timer, Pin, PWM, ADC
+from machine import Timer, Pin, PWM, ADC, SPI
 from machine import time_pulse_us
 import array, time
 from rp2 import PIO, StateMachine, asm_pio
@@ -117,7 +117,32 @@ class h_Servo():
         h_pwr =  h_High_level_time / 20000
         h_value = int(h_pwr*self.h_PERIOD)
         self.h_servo.duty_u16(h_value)
-        
+
+class Ultrasound_gain():
+
+    def __init__(self,csPin,sckPin,mosiPin):
+        # Assign chip select (CS) pin (and start it high)
+        self.cs = Pin(csPin, Pin.OUT)
+        # Initialize SPI
+        self.spi = SPI(0,
+                  baudrate=1000000,
+                  polarity=1,
+                  phase=1,
+                  bits=8,
+                  firstbit=SPI.MSB,
+                  sck=Pin(sckPin),
+                  mosi=Pin(mosiPin))
+        self.cs.value(1) # for the 'start it high'
+
+    def set_gain(self,gain):
+        msg = bytearray()
+        msg.append(0x00)
+        msg.append(str(gain))
+        # Send out SPI message
+        self.cs.value(0)
+        self.spi.write(msg)
+        self.cs.value(1)
+
 class Ultrasonic():
     def __init__(self, trig_Pin, echo_Pin):
         """Initialize Input(echo) and Output(trig) Pins."""

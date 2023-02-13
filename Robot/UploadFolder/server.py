@@ -1,5 +1,5 @@
 from machine import UART
-import time
+import time,utime
 
 
 def sendUART(toSend):
@@ -23,24 +23,36 @@ def sendReceiveUART(toSend, wait=1):
         time.sleep(wait)
     return(read)
 
+def sendCMD(cmd,timeout=2000,ack='OK'):
+    sendUART(cmd)
+    t = utime.ticks_ms()
+    while (utime.ticks_ms() - t) < timeout:
+        s=uart.read()
+        if(s != None):
+            s=s.decode('utf-8')
+            print(s)
+            if(s.find(ack) >= 0):
+                return True
+    return False
+
 def sendString(toSend):
     length=str(len(toSend))
     send='AT+CIPSEND=0,'+length
-    sendReceiveUART(send)
-    sendReceiveUART(toSend)
+    sendCMD(send)
+    sendCMD(toSend)
 
 
 
 uart = UART(1,115200)
 
 
-sendReceiveUART('AT+RST')
-sendReceiveUART('AT+GMR')
-sendReceiveUART('AT+CWMODE=3')
-sendReceiveUART('AT+CWSAP?')
-sendReceiveUART('AT+CWSAP="ultrasound robot","password123",5,3')
-sendReceiveUART('AT+CIPMUX=1')
-sendReceiveUART('AT+CIPSERVER=1,80')
+sendCMD('AT+RST')
+sendCMD('AT+GMR')
+sendCMD('AT+CWMODE=3')
+sendCMD('AT+CWSAP?')
+sendCMD('AT+CWSAP="ultrasound robot","password123",5,3')
+sendCMD('AT+CIPMUX=1')
+sendCMD('AT+CIPSERVER=1,80')
 
 
 time.sleep(1)
