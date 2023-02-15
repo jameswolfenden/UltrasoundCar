@@ -3,14 +3,6 @@ import sys
 import time
 
 ###############################################################################
-# Constants
-
-# Registers
-REG_DEVID = 0x00
-REG_POWER_CTL = 0x2D
-REG_DATAX0 = 0x32
-
-###############################################################################
 # Settings
 
 # Assign chip select (CS) pin (and start it high)
@@ -41,6 +33,7 @@ def reg_write(spi, cs, data):
     
     # Send out SPI message
     cs.value(0)
+    time.sleep(0.01)
     spi.write(msg)
     cs.value(1)
 
@@ -50,9 +43,16 @@ def reg_write(spi, cs, data):
 # Main
 
 cs.value(1)
+time.sleep(0.01)
 
-for level in range(0, 128):
+
+level=0
+print('level:' + str(level))
+reg_write(spi,cs,level)
+
+time.sleep(20)
+for level in range(0, 256,8):
     print('level:' + str(level))
     reg_write(spi,cs,level)
-    time.sleep(0.1)
+    time.sleep(1)
 

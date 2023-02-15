@@ -98,9 +98,9 @@ async def control_robot():
 
 def setup_wifi():
     send_receive_uart('AT+RST')
-    #send_receive_uart('AT+GMR')
-    #send_receive_uart('AT+CWMODE=3')
-    #send_receive_uart('AT+CWSAP?')
+    send_receive_uart('AT+GMR')
+    send_receive_uart('AT+CWMODE=3')
+    send_receive_uart('AT+CWSAP?')
     send_receive_uart('AT+CWSAP="ultrasound robot","password123",5,3')
     send_receive_uart('AT+CIPMUX=1')
     send_receive_uart('AT+CIPSERVER=1,80')

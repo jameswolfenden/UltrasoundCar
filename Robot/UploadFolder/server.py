@@ -12,10 +12,10 @@ def readUART():
     res=recv.decode('utf-8')
     return res
 
-def sendReceiveUART(toSend, wait=1):
+def sendReceiveUART(toSend, wait=0):
     sendUART(toSend)
     print("Sent "+toSend)
-    #time.sleep(wait)
+    time.sleep(wait)
     read = readUART()
     print("Receive " +read)
     if (read.rstrip()[-2:]!="OK"):
@@ -52,10 +52,15 @@ sendCMD('AT+CWMODE=3')
 sendCMD('AT+CWSAP?')
 sendCMD('AT+CWSAP="ultrasound robot","password123",5,3')
 sendCMD('AT+CIPMUX=1')
-sendCMD('AT+CIPSERVER=1,80')
-
-
 time.sleep(1)
+sendCMD('AT+CIPSERVER=1,80')
+time.sleep(1)
+readUART()
+sendCMD('AT+CIPSERVER?')
+time.sleep(1)
+readUART()
+
+time.sleep(0.5)
 
 for i in range(10):
     sendString(str(i))

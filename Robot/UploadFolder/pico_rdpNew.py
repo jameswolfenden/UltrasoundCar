@@ -132,14 +132,17 @@ class Ultrasound_gain():
                   firstbit=SPI.MSB,
                   sck=Pin(sckPin),
                   mosi=Pin(mosiPin))
+        time.sleep(0.01)
         self.cs.value(1) # for the 'start it high'
 
     def set_gain(self,gain):
+        # Construct message (set ~W bit low, MB bit low)
         msg = bytearray()
         msg.append(0x00)
-        msg.append(str(gain))
+        msg.append(gain)
         # Send out SPI message
         self.cs.value(0)
+        time.sleep(0.01)
         self.spi.write(msg)
         self.cs.value(1)
 
