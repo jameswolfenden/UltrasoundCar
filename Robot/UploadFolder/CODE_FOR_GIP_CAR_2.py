@@ -2,6 +2,7 @@
 import pico_4wdNew as car
 import time
 from ws import WS_Server
+import math
         
 measure_num = 1
 all_data = []
@@ -9,8 +10,8 @@ all_data = []
 inPipe = True
 
 
-car.move("forward", 1)
-time.sleep(0.5)
+car.move("forward", 20)
+time.sleep(5)
 car.move("stop")
 
 car.v_servo.set_angle(0)
@@ -18,7 +19,67 @@ car.h_servo.set_angle(0)
 
 time.sleep(1)
 
+gain = 14
+car.srf.set_gain(gain)
+
 while inPipe:
+
+    car.move("forward", 10)
+
+    for point in car.scan_points(6):
+        v,h=car.get_angles(point,0.2,0.25)
+        car.h_servo.set_angle(h)
+        car.v_servo.set_angle(v)
+        distance = car.srf.read_distance()
+        time.sleep(0.25)
+        print("Angle: " +str(math.degrees(point))+", distance: " + str(distance))
+    
+        if distance < 7:
+            car.move("stop", 10)
+            # inital set of the sensor 
+
+            car.h_servo.set_angle(90)
+            car.v_servo.set_angle(60)
+            time.sleep(0.4)
+    
+
+            # verticle scan
+
+            for v_angle in range(60, -40, -10):
+                car.v_servo.set_angle(v_angle)
+                time.sleep(0.05)
+        
+        
+                # horizontal scan
+
+                for h_angle in range(90, -95, -10):
+                    car.h_servo.set_angle(h_angle)
+                    time.sleep(0.01)
+            
+                    #distances and gain
+                    gain = 14
+                    car.srf.set_gain(gain)
+                    distance = car.srf.read_distance()
+                    print("Distance:", distance, "cm at gain: ",gain)
+            
+                    #list of angle vertical
+                    v_angle_data = []
+                    v_angle_data.append(v_angle)
+                    print('v_angle:%s'% v_angle)
+                    v_angle_data.append(round(distance, 3))
+    
+                    #list of angle horozontally
+                    print('h_angle:%s'% h_angle)
+                    v_angle_data.append(h_angle)
+                    all_data.append(v_angle_data)
+            
+                    time.sleep(0.1)
+                    dist1 = []
+            inPipe = False 
+
+
+
+while scan:
 
 # inital set of the sensor 
 
@@ -41,7 +102,7 @@ while inPipe:
             time.sleep(0.01)
             
             #distances and gain
-            gain = 1
+            gain = 14
             car.srf.set_gain(gain)
             distance = car.srf.read_distance()
             print("Distance:", distance, "cm at gain: ",gain)

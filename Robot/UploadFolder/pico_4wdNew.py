@@ -1,6 +1,8 @@
 from pico_rdpNew import Motor, Speed, h_Servo, v_Servo, Ultrasonic, WS2812, mapping, Ultrasound_gain, SRF10
 from machine import Pin, ADC
 import time
+import math
+
 
 LIGHT_REAR = 0
 LIGHT_BOTTOM_LEFT = 1
@@ -222,3 +224,11 @@ def move(dir, power=0):
         set_motor_power_gradually(0, 0, 0, 0)
 
 
+def get_angles(angle, distance, radius):
+    v_angle = math.degrees(math.atan2(radius*math.cos(angle),distance))
+    h_angle = math.degrees(math.atan2(radius*math.sin(angle),distance))
+    return v_angle,h_angle
+
+def scan_points(points):
+    split = int(360/points)
+    return [float(x)/180*math.pi for x in range(0,360,split)]
