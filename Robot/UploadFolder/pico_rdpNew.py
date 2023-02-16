@@ -1,4 +1,4 @@
-from machine import Timer, Pin, PWM, ADC, SPI
+from machine import Timer, Pin, PWM, ADC, SPI, I2C
 from machine import time_pulse_us
 import array, time
 from rp2 import PIO, StateMachine, asm_pio
@@ -117,6 +117,76 @@ class h_Servo():
         h_pwr =  h_High_level_time / 20000
         h_value = int(h_pwr*self.h_PERIOD)
         self.h_servo.duty_u16(h_value)
+
+        
+class SRF10:
+
+    range_value = 255
+    gain_value = 16
+
+    def __init__(self):
+        # Initialize I2C bus
+        self.i2c = I2C(0,freq=9600, scl=Pin(1), sda=Pin(0))
+
+        # SRF10 I2C address
+        self.SRF10_ADDR = self.i2c.scan()[0]
+
+        # SRF10 register addresses
+        self.SRF10_COMMAND = 0x00
+        self.SRF10_RANGE = 0x02
+        self.SRF10_GAIN = 0x01
+
+    def set_range(self, rangeSet):
+        if rangeSet in range(0,256):
+            self.write_reg(self.SRF10_RANGE, rangeSet)
+            self.range_value = rangeSet
+        else:
+            raise ValueError('Invalid range value: {}'.format(range))
+
+    def set_gain(self, gain):
+        # Write the gain value to the gain register
+        if gain in range(1,17):
+            self.write_reg(self.SRF10_GAIN, gain)
+            self.gain_value = gain
+        else:
+            raise ValueError('Invalid gain value: {}'.format(gain))
+
+    def write_reg(self, register, value):
+        self.i2c.writeto_mem(self.SRF10_ADDR, register, bytearray([value]))
+
+    def read_reg(self, register, num_bytes):
+        return self.i2c.readfrom_mem(self.SRF10_ADDR, register, num_bytes)
+
+    def read_distance(self,wait=None):
+        if wait==None:
+            wait=self.get_max_ping_time()
+        # Initiate range measurement
+        self.write_reg(self.SRF10_COMMAND, 0x51)
+        # Wait for ranging to complete
+        time.sleep(wait)
+        # Read 2-byte range value
+        range_bytes = self.read_reg(self.SRF10_RANGE, 2)
+        distance = (range_bytes[0] << 8) + range_bytes[1]
+        return distance
+    
+    def read_time(self,wait=None):
+        if wait==None:
+            wait=self.get_max_ping_time()
+        # Initiate time measurement
+        self.write_reg(self.SRF10_COMMAND, 0x52)
+        # Wait for ranging to complete
+        time.sleep(wait)
+        # Read 2-byte time value
+        time_bytes = self.read_reg(self.SRF10_RANGE, 2)
+        distance = (time_bytes[0] << 8) + time_bytes[1]
+        return distance
+
+    def get_max_ping_time(self):
+        range_m = 43*(self.range_value+1)/1000
+        time_ping = range_m*2/343
+        time_ping = time_ping+0.005 # safety factor because i dont want it to break
+        return time_ping
+
 
 class Ultrasound_gain():
 

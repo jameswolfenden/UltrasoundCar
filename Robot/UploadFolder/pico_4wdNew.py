@@ -1,4 +1,4 @@
-from pico_rdpNew import Motor, Speed, h_Servo, v_Servo, Ultrasonic, WS2812, mapping, Ultrasound_gain
+from pico_rdpNew import Motor, Speed, h_Servo, v_Servo, Ultrasonic, WS2812, mapping, Ultrasound_gain, SRF10
 from machine import Pin, ADC
 import time
 
@@ -16,6 +16,8 @@ h_servo = h_Servo(18)
 v_servo = v_Servo(20)
 
 ultra_gain = Ultrasound_gain(1,2,3)
+
+srf = SRF10()
 
 speed = Speed(8, 9)
 
