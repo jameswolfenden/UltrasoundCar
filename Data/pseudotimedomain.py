@@ -1,22 +1,58 @@
 import numpy as np
 from scipy import signal
-from scipy.fft import fft, fftshift, ifft
+from scipy.fft import ifft
 import matplotlib.pyplot as plt
 import math
+import csv
+from pathlib import Path
+import os.path
 
 
-gain_time = [2825,2780,2801,2780,2776,2723,2680,2699,2629,1906,1831,1827,1833,1833,1833,1833]
+with open(os.path.join(Path(__file__).resolve().parents[1], os.path.join("Robot", os.path.join("UploadFolder", "gain_pings.csv"))), newline='') as f:
+    reader = csv.reader(f)
+    gain_time = list(reader)
+gain_time = [eval(i) for i in gain_time[0]]
 
 
-frequency = 40000
-cycles = 5
-points_per_cycle = 5
+print(gain_time)
+
+#gain_time = [2825,2780,2801,2780,2776,2723,2680,2699,2629,1906,1831,1827,1833,1833,1833,1833]
+
+analogue_gains = [40, 50, 60, 70,80, 100, 120, 140, 200, 250, 300, 350, 400, 500, 600, 700]
+
+plt.figure()
+plt.plot(gain_time, analogue_gains)
+
+plt.figure()
+mss = np.zeros(6000)
+mss[gain_time] = 1
+plt.plot(mss)
+
+frequency = 0.04
+cycles = 15
+points_per_cycle = 20
 ping_duration = cycles/frequency
 print(ping_duration)
 sample_frequency = frequency*points_per_cycle
-signal_duration = 1200
+signal_duration = 6000
 
-signal_responses = np.zeros(signal_duration*sample_frequency)
+# co_pings = [[] for y in range(len(gain_time))]
+
+
+# for i_ping, ping in enumerate(gain_time):
+#     if not any(i_ping in sublist for sublist in co_pings):
+#         for i_ping2 in range(i_ping,len(gain_time)):
+#             if gain_time[i_ping2]+250>ping:
+#                 co_pings[i_ping].append(i_ping2)
+
+# new_pings = []
+# new_gains = []
+# for ping_list in co_pings:
+#     if len(ping_list)>0:
+#         new_pings.append(sum([gain_time[i] for i in ping_list])/len(ping_list))
+#         new_gains.append(min([analogue_gains[i] for i in ping_list]))
+
+signal_responses = np.zeros(int(signal_duration*sample_frequency))
 
 
 ifft_result = ifft([0,points_per_cycle,0], points_per_cycle)
@@ -26,11 +62,12 @@ t = np.arange(cycles*points_per_cycle)
 window = signal.windows.hann(cycles*points_per_cycle)
 ping_shape = np.multiply(window,signal_result)
 
-
 for i_ping, ping in enumerate(gain_time):
-    signal_responses[(ping-1700)*sample_frequency-math.ceil(cycles*points_per_cycle/2):(ping-1700)*sample_frequency+int(cycles*points_per_cycle/2)] = ping_shape*(1-0.05*i_ping)
-
-plt.plot(np.arange(signal_responses.size),signal_responses)
+    if not ping == 0:
+        signal_responses[int(ping*sample_frequency)-math.ceil(cycles*points_per_cycle/2):int(ping*sample_frequency)+int(cycles*points_per_cycle/2)] +=ping_shape.real*1/analogue_gains[i_ping]
+    
+plt.figure()
+plt.plot(np.multiply(np.arange(signal_responses.size),1/sample_frequency*343*10**-6/2),signal_responses)
 
 plt.figure()
 plt.plot(t, ping_shape.real, 'b-', t, ping_shape.imag, 'r--', t, abs(ping_shape))

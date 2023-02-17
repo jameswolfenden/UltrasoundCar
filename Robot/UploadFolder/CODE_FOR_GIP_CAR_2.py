@@ -1,7 +1,6 @@
 #machine.reset()
 import pico_4wdNew as car
 import time
-from ws import WS_Server
 import math
         
 measure_num = 1
@@ -26,7 +25,7 @@ while inPipe:
 
     car.move("forward", 10)
 
-    for point in car.scan_points(6):
+    for point in car.scan_points(4):
         v,h=car.get_angles(point,0.2,0.25)
         car.h_servo.set_angle(h)
         car.v_servo.set_angle(v)
