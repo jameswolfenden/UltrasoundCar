@@ -36,22 +36,6 @@ print(ping_duration)
 sample_frequency = frequency*points_per_cycle
 signal_duration = 6000
 
-# co_pings = [[] for y in range(len(gain_time))]
-
-
-# for i_ping, ping in enumerate(gain_time):
-#     if not any(i_ping in sublist for sublist in co_pings):
-#         for i_ping2 in range(i_ping,len(gain_time)):
-#             if gain_time[i_ping2]+250>ping:
-#                 co_pings[i_ping].append(i_ping2)
-
-# new_pings = []
-# new_gains = []
-# for ping_list in co_pings:
-#     if len(ping_list)>0:
-#         new_pings.append(sum([gain_time[i] for i in ping_list])/len(ping_list))
-#         new_gains.append(min([analogue_gains[i] for i in ping_list]))
-
 signal_responses = np.zeros(int(signal_duration*sample_frequency))
 
 
