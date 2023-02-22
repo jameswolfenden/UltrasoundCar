@@ -29,12 +29,12 @@ cycles = 15
 points_per_cycle = 20
 ping_duration = cycles/frequency
 sample_frequency = frequency*points_per_cycle
-signal_duration = 6000  # change this to 6000 ish for the full signal
+signal_duration = 2000  # change this to 6000 ish for the full signal
 distance_time_scale = 1/sample_frequency*343*10**-6/2  # 343m/s is the speed of sound and 10**6 is to convert to microseconds and 2 is to get the distance to the object
+analogue_gains = [40, 50, 60, 70,80, 100, 120, 140, 200, 250, 300, 350, 400, 500, 600, 700]
 
 # Create the 2d array to store the signal for each angle
 signal_responses = np.zeros((int(signal_duration*sample_frequency),len(gain_time)),dtype=complex)
-analogue_gains = [40, 50, 60, 70,80, 100, 120, 140, 200, 250, 300, 350, 400, 500, 600, 700]
 
 # Calculate the response at each distance for each angle
 ifft_result = ifft([0,points_per_cycle,0], points_per_cycle)
@@ -45,7 +45,7 @@ ping_shape = np.multiply(window,signal_result)
 for i_angle, angle in enumerate(gain_time):
     for i_ping, ping in enumerate(angle):
         if not (ping == 0 or ping >signal_duration-ping_duration/2): # make sure response is within the signal duration
-            signal_responses[int(ping*sample_frequency)-math.ceil(cycles*points_per_cycle/2):int(ping*sample_frequency)+int(cycles*points_per_cycle/2),i_angle] +=ping_shape*1/analogue_gains[i_ping]
+            signal_responses[int(ping*sample_frequency)-math.ceil(cycles*points_per_cycle/2):int(ping*sample_frequency)+int(cycles*points_per_cycle/2),i_angle] +=ping_shape*1/math.sqrt(analogue_gains[i_ping])
 
 distance_responses = abs(signal_responses) # signal_responses is complex so take the absolute value
 

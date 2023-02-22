@@ -8,7 +8,7 @@ time.sleep(1)
 
 gain_data_full = []
 
-car.srf.set_range(20) #  max of like 1.5m idk
+car.srf.set_range(6) #  max of like 1.5m idk
 
 for angle in range(-90,91,10):
     car.h_servo.set_angle(angle)
