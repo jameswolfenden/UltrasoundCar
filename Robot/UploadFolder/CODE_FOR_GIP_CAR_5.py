@@ -14,7 +14,7 @@ gain = range(10, 16, 1)  # gain
 # Pipe parameters & scan position
 r = 15  # radius
 d1 = 15  # distance from sensor
-h = -3  # height of sensor
+h1 = -3  # height of sensor
 n1 = 4  # number of points
 
 # scan of blockage parameters
@@ -42,7 +42,7 @@ while inPipe:
     car.move("forward", 0)
 
     for point in car.scan_points(n1):
-        v, h = car.get_angles(point, d1, r, h)
+        v, h = car.get_angles(point, d1, r, h1)
         car.h_servo.set_angle(h)
         car.v_servo.set_angle(v)
         distance = car.srf.read_distance(0.07)
@@ -73,7 +73,7 @@ for ci in number_of_circles:
 
     # each loop
     for point in car.scan_points(n2):
-        v, h = car.get_angles(point, d2, c, h)
+        v, h = car.get_angles(point, d2, c, h1)
         car.h_servo.set_angle(h)
         car.v_servo.set_angle(v)
         time.sleep(0.25)

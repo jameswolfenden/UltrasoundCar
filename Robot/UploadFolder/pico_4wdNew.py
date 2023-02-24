@@ -53,8 +53,8 @@ def move(dir, power=0):
         set_motor_power_gradually(0, 0, 0, 0)
 
 def get_angles(angle, distance, radius, start_height):
-    v_angle = math.degrees(math.atan2((radius*math.cos(angle))-start_height,distance))
-    h_angle = math.degrees(math.atan2(radius*math.sin(angle),distance))
+    v_angle = math.degrees(math.atan2((-radius*math.cos(angle))+start_height,distance))
+    h_angle = math.degrees(math.atan2(radius*math.sin(-angle),distance))
     return v_angle,h_angle
 
 def scan_points(points):
