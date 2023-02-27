@@ -1,4 +1,4 @@
-from pico_rdpNew import Motor, Speed, h_Servo, v_Servo, WS2812, mapping, SRF10
+from pico_rdpNew import Motor, Speed, h_Servo, v_Servo, WS2812, mapping, SRF10, Ultrasound_gain, Ultrasonic
 from machine import Pin, ADC
 import time
 import math
@@ -13,9 +13,12 @@ h_servo = h_Servo(18)
 v_servo = v_Servo(20)
 
 
-srf = SRF10()
+#srf = SRF10()
 
 speed = Speed(8, 9)
+
+ultra_gain = Ultrasound_gain(1,2,3)
+sonar = Ultrasonic(6, 7)
 
 np =  WS2812(Pin(19, Pin.OUT), 24)
 # slowly increase power of the motor, to avoid hight reverse voltage from motors

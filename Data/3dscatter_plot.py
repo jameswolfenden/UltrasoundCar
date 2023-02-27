@@ -8,12 +8,12 @@ from pathlib import Path
 import os.path
 import PseudoTimeDomain as ptd
 
-radui = range(0,15,1)
+radui = range(5,16,5)
 
 gain_time = []
 # load data
 for radius in radui:
-    with open(os.path.join(Path(__file__).resolve().parents[1], os.path.join("Robot", os.path.join("UploadFolder", "scan_data_time_"+str(radius)+".csv"))), newline='') as f:
+    with open(os.path.join(Path(__file__).resolve().parents[1], os.path.join("Robot", os.path.join("UploadFolder", "radius_"+str(radius)+".csv"))), newline='') as f:
         reader = csv.reader(f)
         gain_time_temp = list(reader)
     gain_time_2d = []
@@ -31,24 +31,24 @@ peak_heights, peak_positions = pseudo_signal.findPeaks3D(pseudo_signal.distance_
 
 px,py,pz = pseudo_signal.cartesianPeaks(peak_positions,0.15,-0.03,np.array([x/100 for x in radui]))
 
-#plot the peaks 
-# fig = plt.figure()
-# ax = fig.add_subplot(111, projection='3d')
-# for i_radius, radius in enumerate(radui):
-#     for i_angle, angle in enumerate(angles):
-#         ax.scatter(px[:,i_radius,i_angle],py[:,i_radius,i_angle],pz[:,i_radius,i_angle],c=pseudo_signal.distance_responses[:,i_radius,i_angle],s=100,cmap=cm.jet, norm=colors.LogNorm())
-# ax.set_xlabel('X')
-# ax.set_ylabel('Y')
-# ax.set_zlabel('Z')
-# plt.show()
-            
-# plot the data
+# plot the peaks 
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
 for i_radius, radius in enumerate(radui):
     for i_angle, angle in enumerate(angles):
-        ax.scatter(pseudo_signal.distance_x[:,i_radius,i_angle],pseudo_signal.distance_y[:,i_radius,i_angle],pseudo_signal.distance_z[:,i_radius,i_angle],c=pseudo_signal.distance_responses[:,i_radius,i_angle],s=100,cmap=cm.jet, norm=colors.LogNorm())
+        ax.scatter(px[i_radius][i_angle],py[i_radius][i_angle],pz[i_radius][i_angle],s=[x*100 for x in peak_heights[i_radius][i_angle]],cmap=cm.jet, norm=colors.LogNorm())
 ax.set_xlabel('X')
 ax.set_ylabel('Y')
 ax.set_zlabel('Z')
 plt.show()
+            
+# plot the data
+# fig = plt.figure()
+# ax = fig.add_subplot(111, projection='3d')
+# for i_radius, radius in enumerate(radui):
+#     for i_angle, angle in enumerate(angles):
+#         ax.scatter(pseudo_signal.distance_x[:,i_radius,i_angle],pseudo_signal.distance_y[:,i_radius,i_angle],pseudo_signal.distance_z[:,i_radius,i_angle],c=pseudo_signal.distance_responses[:,i_radius,i_angle],s=100,cmap=cm.jet, norm=colors.LogNorm())
+# ax.set_xlabel('X')
+# ax.set_ylabel('Y')
+# ax.set_zlabel('Z')
+# plt.show()
