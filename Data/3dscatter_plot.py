@@ -7,6 +7,8 @@ import csv
 from pathlib import Path
 import os.path
 import PseudoTimeDomain as ptd
+import scipy.io as sio
+
 
 radui = range(5,16,5)
 
@@ -30,6 +32,13 @@ pseudo_signal.sphericalToCartesian(0.15,-0.03,np.array([x/100 for x in radui]))
 peak_heights, peak_positions = pseudo_signal.findPeaks3D(pseudo_signal.distance_responses)
 
 px,py,pz = pseudo_signal.cartesianPeaks(peak_positions,0.15,-0.03,np.array([x/100 for x in radui]))
+
+# save interpolated data to matlab file
+pseudo_signal.findResponseAmplitude3D(0.15,-0.03,np.array([x/100 for x in radui]))
+print("Interpolated data")
+# save pseudo_signal.response_amplitude to matlab file
+save_path = os.path.join(Path(__file__).resolve().parents[1], os.path.join("Data", "response_amplitude.mat"))
+sio.savemat(save_path, {'response_amplitude': pseudo_signal.response_amplitude})
 
 # plot the peaks 
 fig = plt.figure()

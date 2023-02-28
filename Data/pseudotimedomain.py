@@ -4,6 +4,7 @@ import math
 import scipy.signal as signal
 from scipy.fft import ifft
 from scipy.signal import find_peaks
+from scipy.interpolate import griddata
 
 # class
 class PseudoTimeDomain:
@@ -82,7 +83,52 @@ class PseudoTimeDomain:
                 self.distance_x[:,i_radius,i_angle] = self.distance*x[i_radius,i_angle]
                 self.distance_y[:,i_radius,i_angle] = self.distance*y[i_radius,i_angle]
                 self.distance_z[:,i_radius,i_angle] = self.distance*z[i_radius,i_angle]
-    
+
+    # find the response amplitude on a 3d grid
+    def findResponseAmplitude3D(self, scan_position, sensor_offset, radui):
+        angles = np.arange(0,360, int(360/len(self.gain_time[0])))
+        # convert the distance responses to cartesian coordinates
+        try: 
+            self.distance_x
+        except AttributeError:
+            self.sphericalToCartesian(scan_position, sensor_offset, radui)
+        # create x,y,z arrays to interpolate to
+        self.xi = np.linspace(np.min(self.distance_x),np.max(self.distance_x),10)
+        self.yi = np.linspace(np.min(self.distance_y),np.max(self.distance_y),10)
+        self.zi = np.linspace(np.min(self.distance_z),np.max(self.distance_z),10)
+        print("this doesnt actually do any interpolation yet but idk what i could do? also the loop is pointless i think?? does something anyway")
+        # create a 3d array to store the response amplitude at each point in the 3d grid
+        self.response_amplitude = np.zeros((len(self.xi),len(self.yi),len(self.zi)))
+        # loop through each point in the 3d grid
+        for i_x, x in enumerate(self.xi):
+            for i_y, y in enumerate(self.yi):
+                for i_z, z in enumerate(self.zi):
+                    # loop through each angle and radius
+                    for i_radius, radius in enumerate(radui):
+                        for i_angle, angle in enumerate(angles):
+                            # interpolate the distance response to the 3d grid point
+                            # find points on the distance response that are within 1/2 the distance between points in the 3d grid in x,y,z
+                            points = np.where((self.distance_x[:,i_radius,i_angle] < x+np.mean(np.diff(self.xi))/2) & (self.distance_x[:,i_radius,i_angle] > x-np.mean(np.diff(self.xi))/2) & (self.distance_y[:,i_radius,i_angle] < y+np.mean(np.diff(self.yi))/2) & (self.distance_y[:,i_radius,i_angle] > y-np.mean(np.diff(self.yi))/2) & (self.distance_z[:,i_radius,i_angle] < z+np.mean(np.diff(self.zi))/2) & (self.distance_z[:,i_radius,i_angle] > z-np.mean(np.diff(self.zi))/2))
+                            # if there are points within 1/2 the distance between points in the 3d grid in x,y,z
+                            if len(points[0]) > 0:
+                                # find the distance response at the closest point
+                                self.response_amplitude[i_x,i_y,i_z] += self.distance_responses[points[0][0],i_radius,i_angle]
+                            # if there are no points within 1/2 the distance between points in the 3d grid in x,y,z do nothing
+
+    # interpolate the distance responses to a 3d grid using griddata
+    def interpolate3D(self, scan_position, sensor_offset, radui):
+        # convert the distance responses to cartesian coordinates
+        try: 
+            self.distance_x
+        except AttributeError:
+            self.sphericalToCartesian(scan_position, sensor_offset, radui)
+        # create x,y,z arrays to interpolate to
+        self.xi = np.linspace(np.min(self.distance_x),np.max(self.distance_x),25)
+        self.yi = np.linspace(np.min(self.distance_y),np.max(self.distance_y),25)
+        self.zi = np.linspace(np.min(self.distance_z),np.max(self.distance_z),25)
+        # interpolate the distance_x, distance_y, distance_z and distance_responses to a 3d grid
+        self.interpolated_responses = griddata((self.distance_x.flatten(),self.distance_y.flatten(),self.distance_z.flatten()),self.distance_responses.flatten(),(self.xi[None,None,:],self.yi[None,:,None],self.zi[:,None,None]),method='nearest')
+        
     # use scipy to find peaks in the signal
     def findPeaks(self, response):
         peaks = signal.find_peaks(response)
@@ -135,4 +181,3 @@ class PseudoTimeDomain:
             
                     
         return peak_x, peak_y, peak_z
-            
