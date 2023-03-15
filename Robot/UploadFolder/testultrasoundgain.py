@@ -6,6 +6,7 @@ ultra = Ultrasound_gain(17,18,19)
 
 
 
-ultra.set_gain(150)
+ultra.set_gain(90)
 
 # want gain between 100 and 255 ish
+print("done")

@@ -3,53 +3,37 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
-# import scipy fft
-from scipy.fftpack import fft, ifft
+import PseudoTimeDomain as ptd
 
 # read in csv file
 df = pd.read_csv('OscilloscopeBlock.csv', skiprows=1, header=None)
 
-# find the index where the third column is first greater than 1.5
-index_start = df[2][df[2] > 1.5].index[0]
+# find the index where the second column is first greater than 1.5
+index_start = df[1][df[1] > 1.5].index[0]-1
 print(index_start)
-index_end = 9000
+index_end = 6750
 
-sample_freq = 1e6 # 1 MHz
 
-# fft of the forth column past the index
-yf = fft(df[3][index_start:index_end].values)
-xf = np.linspace(0.0, sample_freq/2, (index_end-index_start)//2)
+gains = [[3045, 2950, 2994, 2949, 2873, 2874, 2874, 2848, 2848, 2848, 2848, 2848, 2848, 2848, 2802, 1773, 1773, 1772, 1677, 1772, 1772]]
 
-# ifft of the fft of the forth column, cropped to max frequency of 50 kHz
-yf_ifft = ifft(yf[np.where(xf<10000)[0][-1]:np.where(xf>50000)[0][0]])
+pseudo_signal = ptd.PseudoTimeDomain(25,25, 0.04, False)
+pseudo_signal.positionPings2D(gains,5000)
 
-# plot the ifft of the fft of the forth column
+gains_srf = [[3129, 3076, 1961, 1805, 1664, 1683, 1608, 1587, 1511, 1511, 1511, 1511, 1511, 1511, 1511, 1511]]
+
+pseudo_signal_srf = ptd.PseudoTimeDomain(25,25)
+pseudo_signal_srf.positionPings2D(gains_srf,5000)
+
+# plot signal responses and third column
 plt.figure()
-plt.plot(yf_ifft)
-plt.title('IFFT of the FFT of the forth column')
+plt.plot(np.arange(index_end-index_start),df[2][index_start:index_end]-1.54)
+plt.plot(pseudo_signal.signal_responses/8)
+plt.plot(pseudo_signal_srf.signal_responses/8)
 
-# plot the fft
+# plot the distance responses and abs of third column
 plt.figure()
-plt.plot(xf, 2.0/(index_end-index_start) * np.abs(yf[0:(index_end-index_start)//2]))
-plt.grid()
-plt.title('FFT of the forth column')
+plt.plot(np.arange(index_end-index_start),np.abs(df[2][index_start:index_end]-1.54))
+plt.plot(pseudo_signal.distance_responses/8)
+plt.plot(pseudo_signal_srf.distance_responses/8)
 
-# plot the third column
-plt.figure()
-plt.plot(df[2][index_start:index_end])
-plt.title('Third column')
-
-# plot the forth column
-plt.figure()
-plt.plot(df[3][index_start:index_end])
-plt.title('Forth column')
-
-# plot the fith column
-plt.figure()
-plt.plot(df[4][index_start:index_end])
-plt.title('Fith column')
-
-
-# show the plots
 plt.show()
-

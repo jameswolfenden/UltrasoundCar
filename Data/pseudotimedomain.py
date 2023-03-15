@@ -10,9 +10,10 @@ from scipy.interpolate import griddata
 class PseudoTimeDomain:
 
     analogue_gains = [40, 50, 60, 70,80, 100, 120, 140, 200, 250, 300, 350, 400, 500, 600, 700]
+    other_gains = [50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210, 220, 230, 240, 250]
 
     # constructor, set the parameters for signal
-    def __init__(self, cycles, points_per_cycle, frequency=0.04):
+    def __init__(self, cycles, points_per_cycle, frequency=0.04, srf=True):
         self.cycles = cycles
         self.points_per_cycle = points_per_cycle
         self.ping_duration = cycles/frequency
@@ -24,6 +25,9 @@ class PseudoTimeDomain:
         self.t = np.arange(cycles*points_per_cycle)
         self.window = signal.windows.hann(cycles*points_per_cycle)
         self.ping_shape = np.multiply(self.window,self.signal_result)
+        self.srf = srf
+        if (srf==False):
+            self.analogue_gains = self.other_gains
 
     def positionPings2D(self, gain_time, signal_duration):
         self.signal_duration = signal_duration
@@ -34,7 +38,12 @@ class PseudoTimeDomain:
         for i_outer, outer in enumerate(gain_time):
             for i_ping, ping in enumerate(outer):
                 if not (ping == 0 or ping >self.signal_duration-self.ping_duration/2): # make sure response is within the signal duration
-                    self.signal_responses[int(ping*self.sample_frequency)-math.ceil(self.cycles*self.points_per_cycle/2):int(ping*self.sample_frequency)+int(self.cycles*self.points_per_cycle/2),i_outer] +=self.ping_shape*1/math.sqrt(self.analogue_gains[i_ping])
+                    if (self.srf==True):
+                        self.signal_responses[int(ping*self.sample_frequency)-math.ceil(self.cycles*self.points_per_cycle/2):int(ping*self.sample_frequency)+int(self.cycles*self.points_per_cycle/2),i_outer] +=self.ping_shape*math.pow(self.analogue_gains[i_ping],-1.75)
+                    else:
+                        self.signal_responses[int(ping*self.sample_frequency)-math.ceil(self.cycles*self.points_per_cycle/2):int(ping*self.sample_frequency)+int(self.cycles*self.points_per_cycle/2),i_outer] +=self.ping_shape*1
+        # normalise the signal to the maximum value
+        self.signal_responses = self.signal_responses/np.max(self.signal_responses)
         self.distance_responses = np.abs(self.signal_responses)
         #self.distance_responses[ self.distance_responses==0 ] = np.nan # set 0 values to nan so they are not plotted
         self.distance = np.arange(0,(int(self.signal_duration*self.sample_frequency))*self.distance_time_scale,self.distance_time_scale)
@@ -49,7 +58,9 @@ class PseudoTimeDomain:
             for i_inner, inner in enumerate(outer):
                 for i_ping, ping in enumerate(inner):
                     if not (ping == 0 or ping >self.signal_duration-self.ping_duration/2): # make sure response is within the signal duration
-                        self.signal_responses[int(ping*self.sample_frequency)-math.ceil(self.cycles*self.points_per_cycle/2):int(ping*self.sample_frequency)+int(self.cycles*self.points_per_cycle/2),i_outer,i_inner] +=self.ping_shape*1/math.sqrt(self.analogue_gains[i_ping])
+                        self.signal_responses[int(ping*self.sample_frequency)-math.ceil(self.cycles*self.points_per_cycle/2):int(ping*self.sample_frequency)+int(self.cycles*self.points_per_cycle/2),i_outer,i_inner] +=self.ping_shape*math.pow(self.analogue_gains[i_ping],-1.75)
+        # normalise the signal to the maximum value
+        self.signal_responses = self.signal_responses/np.max(self.signal_responses)
         self.distance_responses = np.abs(self.signal_responses)
         self.distance_responses[ self.distance_responses==0 ] = np.nan # set 0 values to nan so they are not plotted
         self.distance = np.arange(0,(int(self.signal_duration*self.sample_frequency))*self.distance_time_scale,self.distance_time_scale)
