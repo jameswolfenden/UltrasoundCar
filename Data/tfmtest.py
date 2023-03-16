@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 # create a 3d meshgrid
 x = np.linspace(-0.2,0.2,11)
 y = np.linspace(-0.2,0.2,11)
-z = np.linspace(0.0,0.4,11)
+z = np.linspace(0.0,0.4,21)
 X,Y,Z = np.meshgrid(x,y,z)
 
 dx = x[1]-x[0]
@@ -53,7 +53,7 @@ sensor_radius = 0.1
 # loop through each distance in the pseudo time domain object and find the response at each point in the meshgrid
 for t, response_t in enumerate(pseudo_signal.distance_responses):
     hypotenuse = pseudo_signal.distance[t]/100
-    hypotenuse = 0.1
+    hypotenuse = 0.2
     response_t=[1]
     for angle, response_a in enumerate(response_t):
         radius_of_aperture = hypotenuse*np.sin(aperture_6db_angle/2)
@@ -63,24 +63,28 @@ for t, response_t in enumerate(pseudo_signal.distance_responses):
         distance_to_sensor_edges = np.sqrt((X_edges-sensor_position_x)**2 + (Y_edges-sensor_position_y)**2 + Z_edges**2)
         edges_before_hypotenuse = distance_to_sensor_edges < hypotenuse
         edges_after_hypotenuse = distance_to_sensor_edges >= hypotenuse
-        cells_after_hypotenuse = np.logical_and(edges_after_hypotenuse[:-1,:-1,:-1],edges_after_hypotenuse[1:,:-1,:-1])
-        cells_after_hypotenuse = np.logical_and(cells_after_hypotenuse,edges_after_hypotenuse[:-1,1:,:-1])
-        cells_after_hypotenuse = np.logical_and(cells_after_hypotenuse,edges_after_hypotenuse[:-1,:-1,1:])
-        cells_after_hypotenuse = np.logical_and(cells_after_hypotenuse,edges_after_hypotenuse[1:,1:,-1])
-        cells_after_hypotenuse = np.logical_and(cells_after_hypotenuse,edges_after_hypotenuse[1:,-1,1:])
-        cells_after_hypotenuse = np.logical_and(cells_after_hypotenuse,edges_after_hypotenuse[-1,1:,1:])
-        cells_after_hypotenuse = np.logical_and(cells_after_hypotenuse,edges_after_hypotenuse[1:,1:,1:])
+        cells_after_hypotenuse = np.logical_or(edges_after_hypotenuse[:-1,:-1,:-1],edges_after_hypotenuse[1:,:-1,:-1])
+        cells_after_hypotenuse = np.logical_or(cells_after_hypotenuse,edges_after_hypotenuse[:-1,1:,:-1])
+        cells_after_hypotenuse = np.logical_or(cells_after_hypotenuse,edges_after_hypotenuse[:-1,:-1,1:])
+        cells_after_hypotenuse = np.logical_or(cells_after_hypotenuse,edges_after_hypotenuse[1:,1:,:-1])
+        cells_after_hypotenuse = np.logical_or(cells_after_hypotenuse,edges_after_hypotenuse[1:,:-1,1:])
+        cells_after_hypotenuse = np.logical_or(cells_after_hypotenuse,edges_after_hypotenuse[:-1,1:,1:])
+        cells_after_hypotenuse = np.logical_or(cells_after_hypotenuse,edges_after_hypotenuse[1:,1:,1:])
 
-        cells_before_hypotenuse = np.logical_and(edges_before_hypotenuse[:-1,:-1,:-1],edges_before_hypotenuse[1:,:-1,:-1])
-        cells_before_hypotenuse = np.logical_and(cells_before_hypotenuse,edges_before_hypotenuse[:-1,1:,:-1])
-        cells_before_hypotenuse = np.logical_and(cells_before_hypotenuse,edges_before_hypotenuse[:-1,:-1,1:])
-        cells_before_hypotenuse = np.logical_and(cells_before_hypotenuse,edges_before_hypotenuse[1:,1:,-1])
-        cells_before_hypotenuse = np.logical_and(cells_before_hypotenuse,edges_before_hypotenuse[1:,-1,1:])
-        cells_before_hypotenuse = np.logical_and(cells_before_hypotenuse,edges_before_hypotenuse[-1,1:,1:])
-        cells_before_hypotenuse = np.logical_and(cells_before_hypotenuse,edges_before_hypotenuse[1:,1:,1:])
+        cells_before_hypotenuse = np.logical_or(edges_before_hypotenuse[:-1,:-1,:-1],edges_before_hypotenuse[1:,:-1,:-1])
+        cells_before_hypotenuse = np.logical_or(cells_before_hypotenuse,edges_before_hypotenuse[:-1,1:,:-1])
+        cells_before_hypotenuse = np.logical_or(cells_before_hypotenuse,edges_before_hypotenuse[:-1,:-1,1:])
+        cells_before_hypotenuse = np.logical_or(cells_before_hypotenuse,edges_before_hypotenuse[1:,1:,:-1])
+        cells_before_hypotenuse = np.logical_or(cells_before_hypotenuse,edges_before_hypotenuse[1:,:-1,1:])
+        cells_before_hypotenuse = np.logical_or(cells_before_hypotenuse,edges_before_hypotenuse[:-1,1:,1:])
+        cells_before_hypotenuse = np.logical_or(cells_before_hypotenuse,edges_before_hypotenuse[1:,1:,1:])
 
-        cells_in_aperture = np.logical_and(np.logical_not(cells_after_hypotenuse),np.logical_not(cells_before_hypotenuse))
-        responses[cells_in_aperture] = +response_a
+        cells_at_hypotenuse = np.logical_and(cells_after_hypotenuse,cells_before_hypotenuse)
+
+        # restrict the response within the radius of the aperture
+        distance_to_centre_of_aperture = np.sqrt((X-sensor_position_x)**2 + (Y-sensor_position_y)**2)
+        cells_in_radius = np.logical_and(cells_at_hypotenuse,distance_to_centre_of_aperture < radius_of_aperture)
+        responses[cells_in_radius] = +response_a
 
 # plot edges before and after hypotenuse
 fig, axs = plt.subplots(1,2)
@@ -91,7 +95,25 @@ axs[1].imshow(edges_after_hypotenuse[:,:,0])
 fig, axs = plt.subplots(1,3)
 axs[0].imshow(cells_before_hypotenuse[:,:,0])
 axs[1].imshow(cells_after_hypotenuse[:,:,0])
-axs[2].imshow(cells_in_aperture[:,:,0])
+axs[2].imshow(cells_in_radius[:,:,0])
+plt.show()
+
+# scatter plot of edges before and after hypotenuse
+fig = plt.figure()
+ax = fig.add_subplot(121, projection='3d')
+ax.scatter(X_edges[edges_before_hypotenuse],Y_edges[edges_before_hypotenuse],Z_edges[edges_before_hypotenuse],c='b')
+ax = fig.add_subplot(122, projection='3d')
+ax.scatter(X_edges[np.logical_not(edges_after_hypotenuse)],Y_edges[np.logical_not(edges_after_hypotenuse)],Z_edges[np.logical_not(edges_after_hypotenuse)],c='r')
+plt.show()
+
+# scatter plot of cells before and after hypotenuse and in aperture
+fig = plt.figure()
+ax = fig.add_subplot(131, projection='3d')
+ax.scatter(X[cells_before_hypotenuse],Y[cells_before_hypotenuse],Z[cells_before_hypotenuse],c='b')
+ax = fig.add_subplot(132, projection='3d')
+ax.scatter(X[np.logical_not(cells_after_hypotenuse)],Y[np.logical_not(cells_after_hypotenuse)],Z[np.logical_not(cells_after_hypotenuse)],c='r')
+ax = fig.add_subplot(133, projection='3d')
+ax.scatter(X[cells_in_radius],Y[cells_in_radius],Z[cells_in_radius],c='g')
 plt.show()
 
 # plot each response in z in 2d using imshow on its own plot in the same figure and laebl the plot with the z value
