@@ -9,9 +9,9 @@ import matplotlib.pyplot as plt
 # use the total focusing method to find the responses in 3d space
 
 # create a 3d meshgrid
-x = np.linspace(-0.2,0.2,21)
-y = np.linspace(-0.2,0.2,21)
-z = np.linspace(0.0,0.4,21)
+x = np.linspace(-0.2,0.2,11)
+y = np.linspace(-0.2,0.2,11)
+z = np.linspace(0.0,0.4,11)
 X,Y,Z = np.meshgrid(x,y,z)
 
 dx = x[1]-x[0]
