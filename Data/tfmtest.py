@@ -5,14 +5,15 @@ import csv
 from pathlib import Path
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
+import scipy.io as sio
 
 
 # use the total focusing method to find the responses in 3d space
 
 # create a 3d meshgrid
-x = np.linspace(-0.2, 0.2, 21)
-y = np.linspace(-0.2, 0.2, 21)
-z = np.linspace(0.01, 0.2, 20)
+x = np.linspace(-0.15, 0.15, 21)
+y = np.linspace(-0.15, 0.15, 21)
+z = np.linspace(0.15, 0.3, 20)
 X, Y, Z = np.meshgrid(x, y, z, indexing='ij')
 
 dx = x[1]-x[0]
@@ -29,11 +30,11 @@ X_edges, Y_edges, Z_edges = np.meshgrid(
 pseudo_signal = ptd.PseudoTimeDomain(15, 20)
 
 
-radui = range(5, 16, 5)
+radui = [7.5]
 gain_time = []
 # load data
 for sensor_radius in radui:
-    with open(os.path.join(Path(__file__).resolve().parents[1], os.path.join("Robot", os.path.join("UploadFolder", "radius_"+str(sensor_radius)+".csv"))), newline='') as f:
+    with open(os.path.join(Path(__file__).resolve().parents[1], os.path.join("Robot", os.path.join("UploadFolder", "scan_data_time_"+str(sensor_radius)+".csv"))), newline='') as f:
         reader = csv.reader(f)
         gain_time_temp = list(reader)
     gain_time_2d = []
@@ -45,18 +46,21 @@ sensor_angles = np.arange(0, 360, int(360/len(gain_time[0])))
 
 # use the pseudo time domain object to find the responses using the gain time data
 # important the [1]!!!!!!!!!!
-pseudo_signal.positionPings2D(gain_time[1], 6000)
+# find largest value in gain_time[0]
+max_gain_time = max([max(i) for i in gain_time[0]])
+
+pseudo_signal.positionPings2D(gain_time[0], int(max_gain_time+pseudo_signal.ping_duration/2+10))
 
 # 3d array of zeros to store the responses in the meshgrid
 responses = np.zeros_like(X)
 
 aperture_6db_angle = np.radians(72)
 
-sensor_radius = 0.1
+sensor_radius = radui[0]/100
 
 # loop through each distance in the pseudo time domain object and find the response at each point in the meshgrid
 for t, response_t in enumerate(pseudo_signal.distance_responses):
-    d = pseudo_signal.distance[t]/100
+    d = pseudo_signal.distance[t]
     # d = 0.2
     # response_t = [1]
     for angle, response_a in enumerate(response_t):
@@ -129,6 +133,81 @@ fig1.update_layout(
                    colorbar_len=0.75,
                    **colour_scale))
 fig1.show()
+
+
+X_plot, Y_plot = np.meshgrid(x, y)
+fig2 = go.Figure(frames=[
+    go.Frame(data=[go.Surface(x=X_plot, y=Y_plot, z=np.ones_like(X_plot)*z[to_plot], surfacecolor=responses[:, :, to_plot].T,
+                             **colour_scale), x_slice, y_slice], name=str(to_plot))
+    for to_plot in range(len(z))])
+
+# Add data to be displayed before animation starts
+fig2.add_trace(go.Surface(x=X_plot,y=Y_plot,z=np.zeros_like(X_plot), surfacecolor=responses[:, :, 0].T, **colour_scale))
+fig2.add_trace(x_slice)
+fig2.add_trace(y_slice)
+
+
+def frame_args(duration):
+    return {
+        "frame": {"duration": duration},
+        "mode": "immediate",
+        "fromcurrent": True,
+        "transition": {"duration": duration, "easing": "linear"},
+    }
+
+
+sliders = [
+    {
+        "pad": {"b": 10, "t": 60},
+        "len": 0.9,
+        "x": 0.1,
+        "y": 0,
+        "steps": [
+            {
+                "args": [[f.name], frame_args(0)],
+                "label": str(to_plot),
+                "method": "animate",
+            }
+            for to_plot, f in enumerate(fig2.frames)
+        ],
+    }
+]
+
+# Layout
+fig2.update_layout(
+    title='Slices in volumetric data',
+    scene=dict(
+        zaxis=dict(range=[np.min(z)-0.01, np.max(z)+0.01]),
+    ),
+    updatemenus=[
+        {
+            "buttons": [
+                {
+                    "args": [None, frame_args(50)],
+                    "label": "&#9654;",  # play symbol
+                    "method": "animate",
+                },
+                {
+                    "args": [[None], frame_args(0)],
+                    "label": "&#9724;",  # pause symbol
+                    "method": "animate",
+                },
+            ],
+            "direction": "left",
+            "pad": {"r": 10, "t": 70},
+            "type": "buttons",
+            "x": 0.1,
+            "y": 0,
+        }
+    ],
+    sliders=sliders
+)
+
+fig2.show()
+
+
+# save reponses to a mat file
+sio.savemat('responses.mat', {'responses': responses})
 
 
 # plot x, y and y slices of the responses in 2d using imshow on their own figures

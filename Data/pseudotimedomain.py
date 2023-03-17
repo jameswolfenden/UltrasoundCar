@@ -17,7 +17,7 @@ class PseudoTimeDomain:
         self.cycles = cycles
         self.points_per_cycle = points_per_cycle
         self.ping_duration = cycles/frequency
-        self.distance_time_scale = 1/frequency*343*10**-6/2  # 343m/s is the speed of sound and 10**6 is to convert to microseconds and 2 is to get the distance to the object
+        self.distance_time_scale = 1/(frequency*points_per_cycle)*343*10**-6/2  # 343m/s is the speed of sound and 10**6 is to convert to microseconds and 2 is to get the distance to the object
         self.frequency = frequency
         self.sample_frequency = frequency*points_per_cycle
         self.ifft_result = ifft([0,points_per_cycle,0], points_per_cycle)
