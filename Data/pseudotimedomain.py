@@ -29,41 +29,42 @@ class PseudoTimeDomain:
         if (srf==False):
             self.analogue_gains = self.other_gains
 
-    def positionPings2D(self, gain_time, signal_duration):
-        self.signal_duration = signal_duration
+    def positionPings2D(self, gain_time, signal_start, signal_end):
+        self.signal_start = signal_start
+        self.signal_end = signal_end
         self.gain_time = gain_time
         # Create the 2d array to store the signal
-        self.signal_responses = np.zeros((int(self.signal_duration*self.sample_frequency),len(gain_time)),dtype=complex)
+        self.signal_responses = np.zeros((int((self.signal_end-self.signal_start)*self.sample_frequency),len(gain_time)),dtype=complex)
         # calculate the response at each distance
         for i_outer, outer in enumerate(gain_time):
             for i_ping, ping in enumerate(outer):
-                if not (ping == 0 or ping >self.signal_duration-self.ping_duration/2): # make sure response is within the signal duration
+                if not (ping == 0 or ping >self.signal_end-self.ping_duration/2 or ping < self.signal_start+self.ping_duration/2): # make sure response is within the signal duration
                     if (self.srf==True):
-                        self.signal_responses[int(ping*self.sample_frequency)-math.ceil(self.cycles*self.points_per_cycle/2):int(ping*self.sample_frequency)+int(self.cycles*self.points_per_cycle/2),i_outer] +=self.ping_shape*math.pow(self.analogue_gains[i_ping],-1.75)
+                        self.signal_responses[int((ping-self.signal_start)*self.sample_frequency)-math.ceil(self.cycles*self.points_per_cycle/2):int((ping-self.signal_start)*self.sample_frequency)+int(self.cycles*self.points_per_cycle/2),i_outer] +=self.ping_shape*math.pow(self.analogue_gains[i_ping],-1.75)
                     else:
                         self.signal_responses[int(ping*self.sample_frequency)-math.ceil(self.cycles*self.points_per_cycle/2):int(ping*self.sample_frequency)+int(self.cycles*self.points_per_cycle/2),i_outer] +=self.ping_shape*1
         # normalise the signal to the maximum value
         self.signal_responses = self.signal_responses/np.max(self.signal_responses)
         self.distance_responses = np.abs(self.signal_responses)
         #self.distance_responses[ self.distance_responses==0 ] = np.nan # set 0 values to nan so they are not plotted
-        self.distance = np.arange(0,(int(self.signal_duration*self.sample_frequency))*self.distance_time_scale,self.distance_time_scale)
+        self.distance = np.arange((int(self.signal_start*self.sample_frequency))*self.distance_time_scale,(int(self.signal_end*self.sample_frequency))*self.distance_time_scale,self.distance_time_scale)
 
-    def positionPings3D(self, gain_time, signal_duration):
-        self.signal_duration = signal_duration
+    def positionPings3D(self, gain_time, signal_end):
+        self.signal_end = signal_end
         self.gain_time = gain_time
         # create 3d array to store signal
-        self.signal_responses = np.zeros((int(self.signal_duration*self.sample_frequency),len(gain_time),len(gain_time[0])),dtype=complex)
+        self.signal_responses = np.zeros((int(self.signal_end*self.sample_frequency),len(gain_time),len(gain_time[0])),dtype=complex)
         # calculate the response at each distance
         for i_outer, outer in enumerate(gain_time):
             for i_inner, inner in enumerate(outer):
                 for i_ping, ping in enumerate(inner):
-                    if not (ping == 0 or ping >self.signal_duration-self.ping_duration/2): # make sure response is within the signal duration
+                    if not (ping == 0 or ping >self.signal_end-self.ping_duration/2): # make sure response is within the signal duration
                         self.signal_responses[int(ping*self.sample_frequency)-math.ceil(self.cycles*self.points_per_cycle/2):int(ping*self.sample_frequency)+int(self.cycles*self.points_per_cycle/2),i_outer,i_inner] +=self.ping_shape*math.pow(self.analogue_gains[i_ping],-1.75)
         # normalise the signal to the maximum value
         self.signal_responses = self.signal_responses/np.max(self.signal_responses)
         self.distance_responses = np.abs(self.signal_responses)
         self.distance_responses[ self.distance_responses==0 ] = np.nan # set 0 values to nan so they are not plotted
-        self.distance = np.arange(0,(int(self.signal_duration*self.sample_frequency))*self.distance_time_scale,self.distance_time_scale)
+        self.distance = np.arange(0,(int(self.signal_end*self.sample_frequency))*self.distance_time_scale,self.distance_time_scale)
 
     def findxyz(self, scan_position, sensor_offset, radui):
         print("you havent done anything with the sensor offset yet")

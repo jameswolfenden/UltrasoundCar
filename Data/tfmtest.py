@@ -13,7 +13,7 @@ import scipy.io as sio
 # create a 3d meshgrid
 x = np.linspace(-0.15, 0.15, 21)
 y = np.linspace(-0.15, 0.15, 21)
-z = np.linspace(0.15, 0.3, 20)
+z = np.linspace(0.11, 0.28, 20)
 X, Y, Z = np.meshgrid(x, y, z, indexing='ij')
 
 dx = x[1]-x[0]
@@ -42,24 +42,28 @@ for sensor_radius in radui:
         gain_time_2d.append(
             [int(i.replace('[', '').replace(']', '')) for i in angle])
     gain_time.append(gain_time_2d)
-sensor_angles = np.arange(0, 360, int(360/len(gain_time[0])))
+sensor_angles = np.arange(0, 360, int(360/len(gain_time[0])))-90 # start at 9 o'clock
 
 # use the pseudo time domain object to find the responses using the gain time data
 # important the [1]!!!!!!!!!!
 # find largest value in gain_time[0]
 max_gain_time = max([max(i) for i in gain_time[0]])
+# find the smallest value in gain_time[0] that is not 0
+min_gain_time = min([min(i) for i in gain_time[0] if min(i) != 0])
 
-pseudo_signal.positionPings2D(gain_time[0], int(max_gain_time+pseudo_signal.ping_duration/2+10))
+pseudo_signal.positionPings2D(gain_time[0], int(min_gain_time-pseudo_signal.ping_duration/2-10), int(max_gain_time+pseudo_signal.ping_duration/2+10))
+
+print("Ping positions found")
 
 # 3d array of zeros to store the responses in the meshgrid
-responses = np.zeros_like(X)
+responses = np.zeros_like(X, dtype=np.complex128)
 
 aperture_6db_angle = np.radians(72)
 
 sensor_radius = radui[0]/100
 
 # loop through each distance in the pseudo time domain object and find the response at each point in the meshgrid
-for t, response_t in enumerate(pseudo_signal.distance_responses):
+for t, response_t in enumerate(pseudo_signal.signal_responses):
     d = pseudo_signal.distance[t]
     # d = 0.2
     # response_t = [1]
@@ -73,38 +77,32 @@ for t, response_t in enumerate(pseudo_signal.distance_responses):
         distance_to_sensor_edges_sq = ((X_edges-sensor_position_x)**2 + (Y_edges-sensor_position_y)**2 + Z_edges**2)
         edges_before_d = distance_to_sensor_edges_sq < d**2
         edges_after_d = distance_to_sensor_edges_sq >= d**2
-        cells_after_d = np.logical_or(edges_after_d[:-1, :-1, :-1], edges_after_d[1:, :-1, :-1])
-        cells_after_d = np.logical_or(cells_after_d, edges_after_d[:-1, 1:, :-1])
-        cells_after_d = np.logical_or(cells_after_d, edges_after_d[:-1, :-1, 1:])
-        cells_after_d = np.logical_or(cells_after_d, edges_after_d[1:, 1:, :-1])
-        cells_after_d = np.logical_or(cells_after_d, edges_after_d[1:, :-1, 1:])
-        cells_after_d = np.logical_or(cells_after_d, edges_after_d[:-1, 1:, 1:])
-        cells_after_d = np.logical_or(cells_after_d, edges_after_d[1:, 1:, 1:])
-
-        cells_before_d = np.logical_or(edges_before_d[:-1, :-1, :-1], edges_before_d[1:, :-1, :-1])
-        cells_before_d = np.logical_or(cells_before_d, edges_before_d[:-1, 1:, :-1])
-        cells_before_d = np.logical_or(cells_before_d, edges_before_d[:-1, :-1, 1:])
-        cells_before_d = np.logical_or(cells_before_d, edges_before_d[1:, 1:, :-1])
-        cells_before_d = np.logical_or(cells_before_d, edges_before_d[1:, :-1, 1:])
-        cells_before_d = np.logical_or(cells_before_d, edges_before_d[:-1, 1:, 1:])
-        cells_before_d = np.logical_or(cells_before_d, edges_before_d[1:, 1:, 1:])
+        # use + to find or of the 8 edges. might be faster than np.logical_or
+        cells_after_d = edges_after_d[:-1, :-1, :-1] + edges_after_d[1:, :-1, :-1] + edges_after_d[:-1, 1:, :-1] + edges_after_d[:-1, :-1, 1:] + edges_after_d[1:, 1:, :-1] + edges_after_d[1:, :-1, 1:] + edges_after_d[:-1, 1:, 1:] + edges_after_d[1:, 1:, 1:]
+        cells_before_d = edges_before_d[:-1, :-1, :-1] + edges_before_d[1:, :-1, :-1] + edges_before_d[:-1, 1:, :-1] + edges_before_d[:-1, :-1, 1:] + edges_before_d[1:, 1:, :-1] + edges_before_d[1:, :-1, 1:] + edges_before_d[:-1, 1:, 1:] + edges_before_d[1:, 1:, 1:]
 
         cells_at_d = np.logical_and(cells_after_d, cells_before_d)
 
         # restrict the response within the radius of the aperture
         distance_to_centre_of_aperture = np.sqrt(
             (X-sensor_position_x)**2 + (Y-sensor_position_y)**2)
+        angle_to_centre_of_aperture = np.sin(distance_to_centre_of_aperture/d)
         cells_in_radius = np.logical_and(
             cells_at_d, distance_to_centre_of_aperture < radius_of_aperture)
 
-        if radius_of_aperture == 0:
-            power_scale = np.zeros_like(distance_to_centre_of_aperture)
-        else:
-            power_scale = distance_to_centre_of_aperture/radius_of_aperture
-            power_scale[power_scale < 0] = 0
-        responses[cells_at_d] += response_a*- \
-            (((power_scale[cells_at_d])-4)**3)/64
+        # if radius_of_aperture == 0:
+        #     power_scale = np.zeros_like(distance_to_centre_of_aperture)
+        # else:
+            # power_scale = distance_to_centre_of_aperture/radius_of_aperture
+            # power_scale[power_scale < 0] = 0
+        # responses[cells_at_d] += response_a*- (((power_scale[cells_at_d])-4)**3)/64
+        power_scale = np.sin(1.5*angle_to_centre_of_aperture)/(1.5*angle_to_centre_of_aperture)
+        responses[cells_at_d] += response_a*power_scale[cells_at_d]
 
+print("Loop complete")
+
+# find the abs of the responses
+responses = np.abs(responses)
 
 to_plot_x = int(1*len(x)/2)
 to_plot_y = int(1*len(y)/2)

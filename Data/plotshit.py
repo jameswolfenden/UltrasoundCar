@@ -29,11 +29,13 @@ plt.figure()
 plt.plot(np.arange(index_end-index_start),df[2][index_start:index_end]-1.54)
 plt.plot(pseudo_signal.signal_responses/8)
 plt.plot(pseudo_signal_srf.signal_responses/8)
+plt.legend(['Signal', 'Pseudo hc', 'Pseudo SRF'])
 
 # plot the distance responses and abs of third column
 plt.figure()
 plt.plot(np.arange(index_end-index_start),np.abs(df[2][index_start:index_end]-1.54))
 plt.plot(pseudo_signal.distance_responses/8)
 plt.plot(pseudo_signal_srf.distance_responses/8)
+plt.legend(['Signal', 'Pseudo hc', 'Pseudo SRF'])
 
 plt.show()
