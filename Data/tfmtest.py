@@ -92,7 +92,7 @@ to_plot_x = int(1*len(x)/2)
 to_plot_y = int(1*len(y)/2)
 to_plot_z = int(1*len(z)/2)
 
-colour_scale = dict(cmin=-10, cmax=np.max(responses), colorscale="Jet")
+colour_scale = dict(cmin=-25, cmax=np.max(responses), colorscale="Jet")
 
 X_plot, Y_plot = np.meshgrid(x, y)
 Z_plot = np.ones_like(X_plot)*z[to_plot_z]
@@ -192,48 +192,56 @@ fig2.update_layout(
 
 fig2.show()
 
+X_plot = Z.flatten() * 1e2
+Y_plot = X.flatten() * 1e2
+Z_plot = Y.flatten() * 1e2
+value_plot = responses
+value_plot[X**2 + Y**2 > (pipe_radius*1.1)**2] = -9999
+value_plot = value_plot.flatten()
 
 
-# Plot Pipe Wall
-pipe_theta = np.linspace(0, 2*np.pi, 100)
-pipe_zc = z
-pipe_ang, pipe_zc = np.meshgrid(pipe_theta, pipe_zc)
-pipe_xc = pipe_radius * np.cos(pipe_ang)
-pipe_yc = pipe_radius * np.sin(pipe_ang)
-
-pipe_color = [[0, 'red'],
-             [1, 'red']]
-
-#pio.renderers.default = "browser" # "svg" "browser"
 fig3 = go.Figure(data=go.Isosurface(
-    x = Z.flatten() * 1e2,
-    y = X.flatten() * 1e2,
-    z = Y.flatten() * 1e2,
-    value=responses.flatten(),
+    x=X_plot,
+    y=Y_plot,
+    z=Z_plot,
+    value=value_plot,
     isomin=-15,
     isomax=0,
     caps=dict(x_show=False, y_show=False),
     colorscale='jet',
-    showscale=False,
     surface_count=6,
     opacity=0.3
     ))
+
+# Plot Pipe Wall
+pipe_theta = np.linspace(0, 2*np.pi, 100)
+pipe_ang, Z_pipe = np.meshgrid(pipe_theta, z)
+X_pipe = pipe_radius * np.cos(pipe_ang)
+Y_pipe = pipe_radius * np.sin(pipe_ang)
+
+pipe_color = [[0, 'red'],
+             [1, 'red']]
 fig3.add_trace(go.Surface(
-   x = pipe_zc * 1e2,
-   y = pipe_xc * 1e2,
-   z = pipe_yc * 1e2,
+   x = Z_pipe * 1e2,
+   y = X_pipe * 1e2,
+   z = Y_pipe * 1e2,
    colorscale = pipe_color,
    showscale=False,
    opacity=0.1
    ))
+
 camera = dict(eye=dict(x=1.5, y=2.5, z=0.6))
 fig3.update_layout(scene_camera = camera)
 fig3.update_layout(scene_aspectmode='data')
 fig3.update_layout(margin=dict(r=10, b=10, l=10, t=10))
 fig3.update_layout(scene=dict(xaxis_title='Z (cm)', yaxis_title='X (cm)', zaxis_title='Y (cm)'),
                   font=dict(family="verdana", color="Black", size=18))
+# fig3.update_layout(
+#     width=2000,
+#     height=2000,
+# )
+# fig3.write_image("fig3.svg")
 fig3.show()
-# fig.write_html("images/brick1_3d_saft.html")
 
 
 
