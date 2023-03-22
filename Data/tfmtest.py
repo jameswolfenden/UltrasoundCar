@@ -16,16 +16,6 @@ y = np.linspace(-0.25, 0.25, 51)
 z = np.linspace(0.01, 0.5, 50)
 X, Y, Z = np.meshgrid(x, y, z, indexing='ij')
 
-dx = x[1]-x[0]
-dy = y[1]-y[0]
-dz = z[1]-z[0]
-
-x_edges = np.append(x, x[-1]+dx)-dx/2
-y_edges = np.append(y, y[-1]+dy)-dy/2
-z_edges = np.append(z, z[-1]+dz)-dz/2
-X_edges, Y_edges, Z_edges = np.meshgrid(
-    x_edges, y_edges, z_edges, indexing='ij')
-
 # create a PseudoTimeDomain object
 pseudo_signal = ptd.PseudoTimeDomain(15, 20)
 
@@ -36,7 +26,7 @@ radui = [7.5]
 gain_time = []
 # load data
 for sensor_radius in radui:
-    with open(os.path.join(Path(__file__).resolve().parents[1], os.path.join("Robot", os.path.join("UploadFolder", "scan_data_time_8.1.csv"))), newline='') as f:
+    with open(os.path.join(Path(__file__).resolve().parents[1], os.path.join("Robot", os.path.join("UploadFolder", "scan_data_time_7.1.csv"))), newline='') as f:
         reader = csv.reader(f)
         gain_time_temp = list(reader)
     gain_time_2d = []
@@ -58,7 +48,7 @@ print("Ping positions found")
 # 3d array of zeros to store the responses in the meshgrid
 responses = np.zeros_like(X, dtype=np.complex128)
 
-aperture_6db_angle = np.radians(72)
+#aperture_6db_angle = np.radians(72)
 
 sensor_radius = radui[0]/100
 
