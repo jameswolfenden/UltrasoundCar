@@ -4,8 +4,11 @@ from scipy.interpolate import interp1d
 from scipy.signal import hilbert
 
 def find_saft(x,y,z, sensor_radius, sensor_angles, time_domain_data, time_data, hilberted):
+    dx = x[1]-x[0]
+    dy = y[1]-y[0]
+    dz = z[1]-z[0]
     # create a 3d meshgrid
-    X, Y, Z = np.meshgrid(x, y, z, indexing='ij')
+    X, Y, Z = np.meshgrid(x+dx/2, y+dy/2, z+dz/2, indexing='ij')
     # 3d array of zeros to store the responses in the meshgrid
     responses = np.zeros_like(X, dtype=np.complex128)
 
@@ -16,7 +19,7 @@ def find_saft(x,y,z, sensor_radius, sensor_angles, time_domain_data, time_data, 
     for i, angle in enumerate(sensor_angles):
         sensor_position_x = sensor_radius * np.sin(np.radians(angle))
         sensor_position_y = sensor_radius * np.cos(np.radians(angle))
-        distance_to_sensor = np.sqrt((X-sensor_position_x)**2 + (Y-sensor_position_y)**2 + Z**2)
+        distance_to_sensor = np.sqrt((X-sensor_position_x)**2 + (Y-sensor_position_y)**2 + (Z)**2)
         # interpolate the signal response to the delay
         interpolated_response_f = interp1d(time_data, time_domain_data[:,i], axis=0)
         interpolated_response = interpolated_response_f(distance_to_sensor)

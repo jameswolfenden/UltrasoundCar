@@ -5,22 +5,28 @@ import pandas as pd
 
 
 pipe_radius = 150 * 1e-3
-radui = [7.5]
+sensor_radius = 7.5e-2
 
 # Read in the data using pandas
-signal_responses_data = pd.read_csv(os.path.join("Data","test.csv"), header=None).to_numpy()
-timestep = 0.0001 # change!!!!!
-time_data = np.arange(0, len(signal_responses_data[0])*timestep, timestep)
+signal_responses_data = pd.read_csv(os.path.join("Data","radiustimedata7.5.csv"), header=None).to_numpy()
+timestep = 2.5*1e-6 # change!!!!!
+print("timestep: ", timestep)
+
+signal_responses_data = np.append(signal_responses_data, np.zeros((100,len(signal_responses_data[0]))), axis=0)
+
+time_data = np.arange(0, len(signal_responses_data[:,0]))*timestep
+# convert time to distance
+time_data = time_data*343/2
 
 sensor_angles = np.arange(0, 360, int(360/len(signal_responses_data[0])))-90  # start at 9 o'clock
 
 print("Ping positions found")
 
-x = np.linspace(-0.25, 0.25, 51)
-y = np.linspace(-0.25, 0.25, 51)
-z = np.linspace(0.01, 0.5, 50)
+x = np.linspace(-0.20, 0.20, 51)
+y = np.linspace(-0.20, 0.20, 51)
+z = np.linspace(0.01, 0.25, 50)
 
-responses = signalresponses.find_saft(x,y,z,radui[0]/100, sensor_angles, signal_responses_data, time_data, True)
+responses = signalresponses.find_saft(x,y,z,sensor_radius, sensor_angles, signal_responses_data, time_data, False)
 
 print("saft complete")
 

@@ -14,7 +14,7 @@ radui = [7.5]
 gain_time = []
 # load data
 for sensor_radius in radui:
-    with open(os.path.join(Path(__file__).resolve().parents[1], os.path.join("Robot", os.path.join("UploadFolder", "scan_data_time_8.1.csv"))), newline='') as f:
+    with open(os.path.join(Path(__file__).resolve().parents[1], os.path.join("Robot", os.path.join("UploadFolder", "test.csv"))), newline='') as f:
         reader = csv.reader(f)
         gain_time_temp = list(reader)
     gain_time_2d = []
@@ -34,9 +34,9 @@ pseudo_signal.positionPings2D(gain_time[0], int(max_gain_time + pseudo_signal.pi
 
 print("Ping positions found")
 
-x = np.linspace(-0.25, 0.25, 51)
-y = np.linspace(-0.25, 0.25, 51)
-z = np.linspace(0.01, 0.5, 50)
+x = np.linspace(-0.25, 0.25, 5)
+y = np.linspace(-0.25, 0.25, 5)
+z = np.linspace(0.01, 0.5, 7)
 
 responses = signalresponses.find_saft(x,y,z,radui[0]/100, sensor_angles, pseudo_signal.signal_responses, pseudo_signal.distance, True)
 
