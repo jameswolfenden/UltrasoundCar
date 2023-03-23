@@ -2,6 +2,7 @@ import numpy as np
 import plotly.graph_objects as go
 from scipy.interpolate import interp1d
 from scipy.signal import hilbert
+import matplotlib.pyplot as plt
 
 def find_saft(x,y,z, sensor_radii, sensor_angles, time_domain_data, time_data, hilberted):
     dx = x[1]-x[0]
@@ -30,9 +31,31 @@ def find_saft(x,y,z, sensor_radii, sensor_angles, time_domain_data, time_data, h
             distance_to_centre_of_aperture = np.sqrt(
                 (X-sensor_position_x)**2 + (Y-sensor_position_y)**2)
             angle_to_centre_of_aperture = np.sin(distance_to_centre_of_aperture/Z)
-            power_scale = np.sin(1.5*angle_to_centre_of_aperture)/(1.5*angle_to_centre_of_aperture)
+            # size of transducer and wavelength are hardcoded
+            power_scale = np.sin(np.pi*0.0088/0.008575*np.sin(angle_to_centre_of_aperture))/(np.pi*0.0088/0.008575*np.sin(angle_to_centre_of_aperture))
+            power_scale[power_scale<0] = 0
+            power_scale[distance_to_centre_of_aperture/Z>np.pi/2] = 0
             responses += interpolated_response*power_scale
     return responses
+
+def plot_sinc_function():
+    # polar plot of the sinc function
+    theta = np.linspace(0, 2*np.pi, 1000)
+    r = np.sin(np.pi*0.0088/0.008575*np.sin(theta))/(np.pi*0.0088/0.008575*np.sin(theta))
+    # plot polar with matplotlib
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='polar')
+    ax.plot(theta, r)
+    ax.grid(True)
+    plt.show()
+
+    # plot not polar with matplotlib
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    ax.plot(theta, r)
+    ax.grid(True)
+    plt.show()
+
 
 def convert_to_db(responses):
     # find the abs of the responses
@@ -157,11 +180,11 @@ def plot_isosurface(responses, x, y, z, pipe_radius):
         y=Y_plot,
         z=Z_plot,
         value=value_plot,
-        isomin=-15,
+        isomin=-10,
         isomax=0,
         caps=dict(x_show=False, y_show=False),
         colorscale='jet',
-        surface_count=6,
+        surface_count=10,
         opacity=0.3
         ))
 

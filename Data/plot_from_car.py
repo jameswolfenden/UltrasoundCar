@@ -6,15 +6,15 @@ from pathlib import Path
 import signalresponses
 
 # create a PseudoTimeDomain object
-pseudo_signal = ptd.PseudoTimeDomain(15, 20)
+pseudo_signal = ptd.PseudoTimeDomain(8, 20)
 
 pipe_radius = 150 * 1e-3
-sensor_radii = [7.5, 5.0, 2.5]
+sensor_radii = [7.5]
 
 gain_time = []
 # load data
 for sensor_radius in sensor_radii:
-    with open(os.path.join(Path(__file__).resolve().parents[1], os.path.join("Robot", os.path.join("UploadFolder", "sensor_point_time"+str(sensor_radius)+".csv"))), newline='') as f:
+    with open(os.path.join(Path(__file__).resolve().parents[1], os.path.join("Robot", os.path.join("UploadFolder", "scan_data_time_8.1.csv"))), newline='') as f:
         reader = csv.reader(f)
         gain_time_temp = list(reader)
     gain_time_2d = []
@@ -39,9 +39,9 @@ for i, sensor_radius in enumerate(sensor_radii):
 
 print("Ping positions found")
 
-x = np.linspace(-0.17, 0.17, 101)
-y = np.linspace(-0.17, 0.17, 101)
-z = np.linspace(0.01, 0.5, 100)
+x = np.linspace(-0.17, 0.17, 51)
+y = np.linspace(-0.17, 0.17, 51)
+z = np.linspace(0.01, 0.5, 50)
 
 responses = signalresponses.find_saft(x,y,z,[x/100 for x in sensor_radii], sensor_angles, responses_3d, pseudo_signal.distance, True)
 

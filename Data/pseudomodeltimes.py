@@ -10,7 +10,7 @@ c = 343
 
 # define the transducer locations
 sensor_angles = np.linspace(0, 2*np.pi, 36, endpoint=False)
-sensor_radius = 0.025
+sensor_radius = 0.075
 sensor_x = sensor_radius * -np.cos(sensor_angles)
 sensor_y = sensor_radius * np.sin(sensor_angles)
 sensor_z = 0.0
