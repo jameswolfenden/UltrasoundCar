@@ -3,7 +3,7 @@ import plotly.graph_objects as go
 from scipy.interpolate import interp1d
 from scipy.signal import hilbert
 
-def find_saft(x,y,z, sensor_radius, sensor_angles, time_domain_data, time_data, hilberted):
+def find_saft(x,y,z, sensor_radii, sensor_angles, time_domain_data, time_data, hilberted):
     dx = x[1]-x[0]
     dy = y[1]-y[0]
     dz = z[1]-z[0]
@@ -15,21 +15,23 @@ def find_saft(x,y,z, sensor_radius, sensor_angles, time_domain_data, time_data, 
     if not hilberted:
         time_domain_data = hilbert(time_domain_data)
 
-    # iterate through each angle in the signal responses
-    for i, angle in enumerate(sensor_angles):
-        sensor_position_x = sensor_radius * np.sin(np.radians(angle))
-        sensor_position_y = sensor_radius * np.cos(np.radians(angle))
-        distance_to_sensor = np.sqrt((X-sensor_position_x)**2 + (Y-sensor_position_y)**2 + (Z)**2)
-        # interpolate the signal response to the delay
-        interpolated_response_f = interp1d(time_data, time_domain_data[:,i], axis=0)
-        interpolated_response = interpolated_response_f(distance_to_sensor)
+    # iterate through each sensor radius
+    for rad_i, sensor_radius in enumerate(sensor_radii):
+        # iterate through each angle in the signal responses
+        for i, angle in enumerate(sensor_angles):
+            sensor_position_x = sensor_radius * np.sin(np.radians(angle))
+            sensor_position_y = sensor_radius * np.cos(np.radians(angle))
+            distance_to_sensor = np.sqrt((X-sensor_position_x)**2 + (Y-sensor_position_y)**2 + (Z)**2)
+            # interpolate the signal response to the delay
+            interpolated_response_f = interp1d(time_data, time_domain_data[rad_i,:,i], axis=0)
+            interpolated_response = interpolated_response_f(distance_to_sensor)
 
-        # apply the directivity function
-        distance_to_centre_of_aperture = np.sqrt(
-            (X-sensor_position_x)**2 + (Y-sensor_position_y)**2)
-        angle_to_centre_of_aperture = np.sin(distance_to_centre_of_aperture/Z)
-        power_scale = np.sin(1.5*angle_to_centre_of_aperture)/(1.5*angle_to_centre_of_aperture)
-        responses += interpolated_response*power_scale
+            # apply the directivity function
+            distance_to_centre_of_aperture = np.sqrt(
+                (X-sensor_position_x)**2 + (Y-sensor_position_y)**2)
+            angle_to_centre_of_aperture = np.sin(distance_to_centre_of_aperture/Z)
+            power_scale = np.sin(1.5*angle_to_centre_of_aperture)/(1.5*angle_to_centre_of_aperture)
+            responses += interpolated_response*power_scale
     return responses
 
 def convert_to_db(responses):

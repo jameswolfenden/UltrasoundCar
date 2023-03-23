@@ -9,12 +9,12 @@ import signalresponses
 pseudo_signal = ptd.PseudoTimeDomain(15, 20)
 
 pipe_radius = 150 * 1e-3
-radui = [7.5]
+sensor_radii = [7.5, 5.0, 2.5]
 
 gain_time = []
 # load data
-for sensor_radius in radui:
-    with open(os.path.join(Path(__file__).resolve().parents[1], os.path.join("Robot", os.path.join("UploadFolder", "test.csv"))), newline='') as f:
+for sensor_radius in sensor_radii:
+    with open(os.path.join(Path(__file__).resolve().parents[1], os.path.join("Robot", os.path.join("UploadFolder", "sensor_point_time"+str(sensor_radius)+".csv"))), newline='') as f:
         reader = csv.reader(f)
         gain_time_temp = list(reader)
     gain_time_2d = []
@@ -29,16 +29,21 @@ sensor_angles = np.arange(0, 360, int(360/len(gain_time[0])))-90  # start at 9 o
 # important the [0]!!!!!!!!!!
 # find largest value in gain_time[0]
 max_gain_time = max([max(i) for i in gain_time[0]])
+if max_gain_time<5000:
+    max_gain_time = 5000
 
-pseudo_signal.positionPings2D(gain_time[0], int(max_gain_time + pseudo_signal.ping_duration / 2 + 10))
+responses_3d = np.zeros((len(sensor_radii), int(int(max_gain_time + pseudo_signal.ping_duration / 2 + 10)*pseudo_signal.sample_frequency), len(sensor_angles)), dtype=np.complex128)
+for i, sensor_radius in enumerate(sensor_radii):
+    pseudo_signal.positionPings2D(gain_time[i], int(max_gain_time + pseudo_signal.ping_duration / 2 + 10))
+    responses_3d[i] = pseudo_signal.signal_responses
 
 print("Ping positions found")
 
-x = np.linspace(-0.25, 0.25, 5)
-y = np.linspace(-0.25, 0.25, 5)
-z = np.linspace(0.01, 0.5, 7)
+x = np.linspace(-0.17, 0.17, 101)
+y = np.linspace(-0.17, 0.17, 101)
+z = np.linspace(0.01, 0.5, 100)
 
-responses = signalresponses.find_saft(x,y,z,radui[0]/100, sensor_angles, pseudo_signal.signal_responses, pseudo_signal.distance, True)
+responses = signalresponses.find_saft(x,y,z,[x/100 for x in sensor_radii], sensor_angles, responses_3d, pseudo_signal.distance, True)
 
 print("saft complete")
 

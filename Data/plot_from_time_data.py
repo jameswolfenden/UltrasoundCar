@@ -2,31 +2,43 @@ import numpy as np
 import os.path
 import signalresponses
 import pandas as pd
+import matplotlib.pyplot as plt
 
 
 pipe_radius = 150 * 1e-3
-sensor_radius = 7.5e-2
+sensor_radii = [7.5e-2]
 
 # Read in the data using pandas
-signal_responses_data = pd.read_csv(os.path.join("Data","radiustimedata7.5.csv"), header=None).to_numpy()
+signal_responses_read = pd.read_csv(os.path.join("Data","radius_time_data7.5_point01515.csv"), header=None).to_numpy()
 timestep = 2.5*1e-6 # change!!!!!
+min_time = 0.004
 print("timestep: ", timestep)
 
-signal_responses_data = np.append(signal_responses_data, np.zeros((100,len(signal_responses_data[0]))), axis=0)
+signal_responses_data = np.zeros((1, int(min_time/timestep), len(signal_responses_read[0])))
 
-time_data = np.arange(0, len(signal_responses_data[:,0]))*timestep
+signal_responses_data[0, :signal_responses_read.shape[0], :signal_responses_read.shape[1]] = signal_responses_read
+
+time_data = np.arange(0, int(min_time/timestep))*timestep
 # convert time to distance
 time_data = time_data*343/2
 
-sensor_angles = np.arange(0, 360, int(360/len(signal_responses_data[0])))-90  # start at 9 o'clock
+sensor_angles = np.arange(0, 360, int(360/len(signal_responses_data[0,0])))-90  # start at 9 o'clock - change to 80 if its offset because there must be an error in the data
+
+# plot the signal responses data against angle
+plt.figure()
+plt.plot(sensor_angles, signal_responses_data[0, 0, :])
+plt.xlabel("Angle (degrees)")
+plt.ylabel("Signal response")
+plt.title("Signal response against angle")
+plt.show()
 
 print("Ping positions found")
 
-x = np.linspace(-0.20, 0.20, 51)
-y = np.linspace(-0.20, 0.20, 51)
-z = np.linspace(0.01, 0.25, 50)
+x = np.linspace(-0.20, 0.20, 101)
+y = np.linspace(-0.20, 0.20, 101)
+z = np.linspace(0.01, 0.25, 100)
 
-responses = signalresponses.find_saft(x,y,z,sensor_radius, sensor_angles, signal_responses_data, time_data, False)
+responses = signalresponses.find_saft(x,y,z,sensor_radii, sensor_angles, signal_responses_data, time_data, False)
 
 print("saft complete")
 
