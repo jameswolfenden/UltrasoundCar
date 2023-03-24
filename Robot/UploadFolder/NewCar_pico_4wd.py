@@ -1,4 +1,4 @@
-from pico_rdpNew import Motor, Speed, h_Servo, v_Servo, WS2812, mapping, SRF10
+from NewCar_pico_rdp import Motor, Speed, h_Servo, v_Servo, WS2812, mapping, SRF10
 from machine import Pin, ADC
 import time
 import math
@@ -13,8 +13,8 @@ h_servo = h_Servo(18)
 v_servo = v_Servo(20)
 
 
-srf_1 = SRF10(1,0)
-srf_2 = SRF10(3,2)
+srf_1 = SRF10(1,0,0)
+srf_2 = SRF10(3,2,1)
 
 speed = Speed(8, 9)
 
@@ -53,16 +53,14 @@ def move(dir, power=0):
     else:
         set_motor_power_gradually(0, 0, 0, 0)
 
-def get_angles(angle, distance, radius, start_height):
-    v_angle = math.degrees(math.atan2((-radius*math.cos(angle))+start_height,distance))
-    h_angle = math.degrees(math.atan2(radius*math.sin(-angle),distance))
-    return v_angle,h_angle
+def scan_points(points):
+    split = int(180/(points-1))
+    return [float(x) for x in range(-90,90,split)]
 
-def scan_points(points, angle=360):
-    split = int(angle/points)
-    return [float(x)/180*math.pi for x in range(0,angle,split)]
+def get_sensor_position(angle_degrees, radius):
+    angle_radians = math.radians(angle_degrees)
+    sensor_position = [radius*math.sin(angle_radians), radius*math.cos(angle_radians), 0]
+    return sensor_position
 
-print("g")
-
-distance = srf.read_distance(0.07)
-print(distance)
+def stop(self):
+    self.h_servo.duty_u16(0)

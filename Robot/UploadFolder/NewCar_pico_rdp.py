@@ -119,16 +119,18 @@ class h_Servo():
         h_pwr =  h_High_level_time / 20000
         h_value = int(h_pwr*self.h_PERIOD)
         self.h_servo.duty_u16(h_value)
-
-        
+    
+    def stop(self):
+        self.h_servo.duty_u16(0)
+     
 class SRF10:
 
     range_value = 255
     gain_value = 16
 
-    def __init__(self, pinscl=1, pinsda=0):
+    def __init__(self, pinscl=1, pinsda=0, bus=0):
         # Initialize I2C bus
-        self.i2c = I2C(0,freq=9600, scl=Pin(pinscl), sda=Pin(pinsda))
+        self.i2c = I2C(bus,freq=9600, scl=Pin(pinscl), sda=Pin(pinsda))
 
         # SRF10 I2C address
         self.SRF10_ADDR = self.i2c.scan()[0]
