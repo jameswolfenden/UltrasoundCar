@@ -27,6 +27,7 @@ class PseudoTimeDomain:
         self.window = signal.windows.hann(cycles*points_per_cycle)
         self.ping_shape = np.multiply(self.window,self.signal_result)
         self.srf = srf
+        self.attenuation_rate = 0.6 # dB/m
         if (srf==False):
             self.analogue_gains = self.other_gains
 
@@ -40,7 +41,7 @@ class PseudoTimeDomain:
             for i_ping, ping in enumerate(outer):
                 if not (ping == 0 or ping >self.signal_end-self.ping_duration/2): # make sure response is within the signal duration
                     if (self.srf==True):
-                        self.signal_responses[int((ping)*self.sample_frequency)-math.ceil(self.cycles*self.points_per_cycle/2):int((ping)*self.sample_frequency)+int(self.cycles*self.points_per_cycle/2),i_outer] +=self.ping_shape*1
+                        self.signal_responses[int((ping)*self.sample_frequency)-math.ceil(self.cycles*self.points_per_cycle/2):int((ping)*self.sample_frequency)+int(self.cycles*self.points_per_cycle/2),i_outer] +=self.ping_shape*1*math.exp(self.attenuation_rate*ping*self.distance_from_μs)
                     else:
                         self.signal_responses[int(ping*self.sample_frequency)-math.ceil(self.cycles*self.points_per_cycle/2):int(ping*self.sample_frequency)+int(self.cycles*self.points_per_cycle/2),i_outer] +=self.ping_shape*1
         # normalise the signal to the maximum value

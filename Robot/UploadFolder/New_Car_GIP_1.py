@@ -18,13 +18,13 @@ car.h_servo.set_angle(95)
 time.sleep(2)
 time.sleep(1)
 # parameters
-gain = range(1,16,1) # gain
+gain = range(1,17,1) # gain
 
 # Pipe parameters & scan position, # scan of blockage parameters
 pipe_radius = [15]  # radius
-r = [7.2]  # sensor radius
+r = [7.5]  # sensor radius
 n = 5 #number of point when moving
-points = 18 # number of points scan
+points = 180 # number of points scan
 
 """
 start_time = time.ticks_ms() # get start time
@@ -94,9 +94,9 @@ for radius in r:
         #time.sleep(0.1)
         #car.h_servo.stop()
         print(angle)
-        time.sleep(0.3)
+        time.sleep(0.1)
         distance = car.srf_1.read_distance(0.07)
-        time.sleep(0.25)
+        time.sleep(0.1)
         sensor_position = car.get_sensor_position(angle, radius)
         print(sensor_position)
         
