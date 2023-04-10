@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.fft import ifft
+from scipy.fft import ifft, fft, fftfreq
 import math
 import matplotlib.pyplot as plt
 import scipy.signal as signal
@@ -11,6 +11,7 @@ sample_frequency = 1e6
 signal_length_seconds = 0.001
 sin_frequency = 40e3
 cycles = 8
+attenuation_rate = 0.6 # dB/m
 points_per_cycle = int(sample_frequency/sin_frequency)
 
 # create an array of zeros to store the time domain response
@@ -22,8 +23,7 @@ signal_result = np.tile(ifft_result,cycles)
 window = signal.windows.hann(cycles*points_per_cycle)
 signal_result = signal_result*window
 
-
-signal_ping_position = np.arange(0.0002, signal_length_seconds, 0.0001)
+signal_ping_position = np.arange(0.0002, signal_length_seconds-0.0002, 0.0001)
 # generate a random scale for each ping
 signal_ping_scale = np.random.rand(len(signal_ping_position))
 #signal_ping_position = [0.001, 0.002, 0.003, 0.004]
@@ -34,6 +34,13 @@ for i, ping_position in enumerate(signal_ping_position):
     ping_position_samples_start = ping_position_samples - math.floor(cycles*points_per_cycle/2)
     ping_position_samples_end = ping_position_samples + math.ceil(cycles*points_per_cycle/2)
     time_response[ping_position_samples_start:ping_position_samples_end] += signal_result*signal_ping_scale[i]
+
+# apply attenuation
+#time_response = time_response*np.exp(attenuation_rate*np.arange(0, len(time_response))/sample_frequency*343*(10**-6)/2)
+
+fftthat = fft(time_response)
+freqs = fftfreq(len(time_response), 1/sample_frequency)
+plt.plot(freqs, np.abs(fftthat))
 
 # 16 threshold levels
 analogue_gains = [40, 50, 60, 70,80, 100, 120, 140, 200, 250, 300, 350, 400, 500, 600, 700]
