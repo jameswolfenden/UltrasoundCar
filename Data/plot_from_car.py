@@ -15,7 +15,7 @@ sensor_radii = [7.5]
 gain_time = []
 # load data
 for sensor_radius in sensor_radii:
-    with open(os.path.join(Path(__file__).resolve().parents[1], os.path.join("Robot", os.path.join("UploadFolder", os.path.join("block4-20-360", "scan_data_time_"+str(sensor_radius)+".csv")))), newline='') as f:
+    with open(os.path.join(Path(__file__).resolve().parents[1], os.path.join("Robot", os.path.join("UploadFolder", os.path.join("block1-20", "scan_data_time_"+str(sensor_radius)+".csv")))), newline='') as f:
         reader = csv.reader(f)
         gain_time_temp = list(reader)
     gain_time_2d = []
