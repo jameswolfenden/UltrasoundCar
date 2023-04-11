@@ -31,25 +31,32 @@ def find_saft(x, y, z, sensor_radii, sensor_angles, time_domain_data, time_data,
             # apply the directivity function
             distance_to_centre_of_aperture = np.sqrt(
                 (X-sensor_position_x)**2 + (Y-sensor_position_y)**2)
-            angle_to_centre_of_aperture = np.sin(distance_to_centre_of_aperture/Z)
+            angle_to_centre_of_aperture = np.arctan2(distance_to_centre_of_aperture,Z)
             # size of transducer and wavelength are hardcoded
             power_scale = np.sin(np.pi*0.0088/0.008575*np.sin(angle_to_centre_of_aperture)
                                  )/(np.pi*0.0088/0.008575*np.sin(angle_to_centre_of_aperture))
             power_scale[power_scale < 0] = 0
-            power_scale[distance_to_centre_of_aperture/Z > np.pi/2] = 0
             responses += interpolated_response*power_scale
     return responses
 
 
 def plot_sinc_function():
     # polar plot of the sinc function
-    theta = np.linspace(0, 2*np.pi, 1000)
+    theta = np.linspace(0.001, 2*np.pi, 1000)
     r = np.sin(np.pi*0.0088/0.008575*np.sin(theta))/(np.pi*0.0088/0.008575*np.sin(theta))
+    r[r < 0.1] = 0.1
     # plot polar with matplotlib
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='polar')
-    ax.plot(theta, r)
+    # get decibels
+    r_dB = 20*np.log10(r/np.max(r))
+    print(r)
+    print(r_dB)
+    ax.plot(theta, r_dB)
     ax.grid(True)
+    # set grid
+    ax.set_rgrids(np.arange(-30, 0, 6), angle=0)
+    ax.set_thetagrids(np.arange(0, 360, 30))
     plt.show()
 
     # plot not polar with matplotlib
@@ -170,7 +177,7 @@ def plot_slices(responses, x, y, z, to_plot_x, to_plot_y, to_plot_z):
     fig2.show()
 
 
-def plot_isosurface(responses, x, y, z, pipe_radius):
+def plot_isosurface(responses, x, y, z, pipe_radius, isomin=-10):
     X, Y, Z = np.meshgrid(x, y, z, indexing='ij')
     X_plot = Z.flatten() * 1e2
     Y_plot = X.flatten() * 1e2
@@ -184,7 +191,7 @@ def plot_isosurface(responses, x, y, z, pipe_radius):
         y=Y_plot,
         z=Z_plot,
         value=value_plot,
-        isomin=-10,
+        isomin=isomin,
         isomax=0,
         caps=dict(x_show=False, y_show=False),
         colorscale='jet',

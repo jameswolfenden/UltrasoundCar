@@ -27,7 +27,7 @@ class PseudoTimeDomain:
         self.window = signal.windows.hann(cycles*points_per_cycle)
         self.ping_shape = np.multiply(self.window,self.signal_result)
         self.srf = srf
-        self.attenuation_rate = 0.6 # dB/m
+        self.attenuation_rate = 0.6 # Np/m
         if (srf==False):
             self.analogue_gains = self.other_gains
 

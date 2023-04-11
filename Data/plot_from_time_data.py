@@ -4,16 +4,15 @@ import signalresponses
 import pandas as pd
 import matplotlib.pyplot as plt
 
-signalresponses.plot_sinc_function()
 
 pipe_radius = 150 * 1e-3
 sensor_radii = [7.5]
 
-timestep = 2.5*1e-6 # change!!!!!
-min_time = 0.004
+timestep = 1e-6 # change!!!!!
+min_time = 0.009
 
 # Read in the data using pandas
-signal_responses_read = pd.read_csv(os.path.join("Data","radius_time_data7.5_point01515.csv"), header=None).to_numpy()
+signal_responses_read = pd.read_csv(os.path.join("Data","data.csv"), header=None).to_numpy()
 print("timestep: ", timestep)
 
 signal_responses_data = np.zeros((1, int(min_time/timestep), len(signal_responses_read[0])))
@@ -38,7 +37,7 @@ print("Ping positions found")
 
 x = np.linspace(-0.20, 0.20, 51)
 y = np.linspace(-0.20, 0.20, 51)
-z = np.linspace(0.01, 0.25, 50)
+z = np.linspace(0.01, 0.90, 90)
 
 responses = signalresponses.find_saft(x,y,z,[x/100 for x in sensor_radii], sensor_angles, signal_responses_data, time_data, False)
 
