@@ -10,7 +10,7 @@ diameter = 2 * radius
 length = 1.0  # length of pipe in meters
 frequency = 40000.0  # ultrasound frequency in Hz
 c = 343.0  # speed of sound in air in m/s
-attenuation = 0.11 # Np/m, check this
+attenuation = 0.2 # Np/m, check this
 
 # Define transducer parameters
 transducer_radius = 0.075  # radius of transducer from centre of pipe in meters
@@ -46,10 +46,12 @@ time = np.linspace(0, time_length, time_samples)  # time vector in seconds
 # Create empty array to store data
 data = np.zeros((len(time), len(transducer_angle)))
 
+level = np.zeros((len(transducer_angle),len(point_angle), len(point_z)))
+
 # Loop through transducer locations
-for i in range(len(transducer_x)):
+for i in range(len(transducer_angle)):
     # Loop through point locations
-    for j in range(len(point_x)):
+    for j in range(len(point_angle)):
         for k in range(len(point_z)):
             # Calculate distance from transducer to point
             distance = np.sqrt((transducer_x[i] - point_x[j])**2 + (transducer_y[i] - point_y[j])**2 + (transducer_z - point_z[k])**2)
@@ -62,11 +64,22 @@ for i in range(len(transducer_x)):
             # sinc function to model transducer
             sinc = np.sin(np.pi*0.0088/0.008575*np.sin(angle))/(np.pi*0.0088/0.008575*np.sin(angle))
             # Account for attenuation
-            attenuation_scale = np.exp(-attenuation * distance)
+            attenuation_scale = np.exp(-attenuation * distance * 2)
             if sinc < 0:
                 sinc = 0
             # Add pulse to data
             data[time_index:time_index + pulse_samples,i] = data[time_index:time_index + pulse_samples,i] + pulse*sinc*attenuation_scale
+            level[i,j,k] = attenuation_scale
+
+# plot level[0,:,:] using imshow
+fig = plt.figure()
+ax = fig.add_subplot(111)
+ax.imshow(level[0,:,:], cmap='gray', aspect='auto')
+ax.set_ylabel('Angle (rad)')
+ax.set_xlabel('Depth (m)')
+ax.set_title('Level')
+plt.show()
+
 
 # save data to csv file
 #np.savetxt('data.csv', data, delimiter=',')
@@ -74,8 +87,9 @@ for i in range(len(transducer_x)):
 # simulate srf10
 # 16 threshold levels
 analogue_gains = [40, 50, 60, 70,80, 100, 120, 140, 200, 250, 300, 350, 400, 500, 600, 700]
-threshold_const = 20 # to account for the fact that the signal amplitude is arbitrary so we need to scale it
-threshold_levels = [1/x*40*threshold_const for x in analogue_gains]
+threshold_multiplier = 20 # to account for the fact that the signal amplitude is arbitrary so we need to scale it
+threshold_addition = 2
+threshold_levels = [1/x*40*threshold_multiplier+threshold_addition for x in analogue_gains]
 
 # find position of first threshold crossing for each threshold level
 threshold_crossings = np.zeros((len(transducer_angle), len(threshold_levels)), dtype=np.int32)
@@ -103,8 +117,8 @@ pseudo_signal.positionPings2D(threshold_crossings, time_length*1e6)
 
 
 # Create grid for plotting
-x = np.linspace(-0.20, 0.20, 51)
-y = np.linspace(-0.20, 0.20, 51)
+x = np.linspace(-0.16, 0.16, 33)
+y = np.linspace(-0.16, 0.16, 33)
 z = np.linspace(0.01, 0.9, 90)
 
 sensor_radii = [transducer_radius*100]
