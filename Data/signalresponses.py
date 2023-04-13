@@ -42,21 +42,27 @@ def find_saft(x, y, z, sensor_radii, sensor_angles, time_domain_data, time_data,
 
 def plot_sinc_function():
     # polar plot of the sinc function
-    theta = np.linspace(0.001, 2*np.pi, 1000)
+    theta = np.concatenate((np.linspace(0.001, np.pi/2, 100), np.linspace(3*np.pi/2, 2*np.pi, 100)))
     r = np.sin(np.pi*0.0088/0.008575*np.sin(theta))/(np.pi*0.0088/0.008575*np.sin(theta))
-    r[r < 0.1] = 0.1
+    #r[r < 0.1] = 0.1
     # plot polar with matplotlib
-    fig = plt.figure()
+    fig = plt.figure(figsize=(3, 3))
     ax = fig.add_subplot(111, projection='polar')
     # get decibels
     r_dB = 20*np.log10(r/np.max(r))
     print(r)
     print(r_dB)
-    ax.plot(theta, r_dB)
+    ax.plot(theta, r_dB, 'r', linewidth=2)
     ax.grid(True)
     # set grid
     ax.set_rgrids(np.arange(-30, 0, 6), angle=0)
     ax.set_thetagrids(np.arange(0, 360, 30))
+    ax.set_rlim(-30, 0)
+    # set 0 to be at the top
+    ax.set_theta_zero_location('N')
+    # change the direction of the angle
+    ax.set_theta_direction(-1)
+    plt.savefig('sinc.svg')
     plt.show()
 
     # plot not polar with matplotlib
@@ -66,6 +72,7 @@ def plot_sinc_function():
     ax.grid(True)
     plt.show()
 
+plot_sinc_function()
 
 def convert_to_db(responses):
     # find the abs of the responses
