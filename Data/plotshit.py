@@ -3,7 +3,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
-import PseudoTimeDomain as ptd
+import pseudotimedomain as ptd
 
 # read in csv file
 df = pd.read_csv('OscilloscopeBlock.csv', skiprows=1, header=None)

@@ -1,5 +1,5 @@
 import numpy as np
-import PseudoTimeDomain as ptd
+import pseudotimedomain as ptd
 import os.path
 import csv
 from pathlib import Path

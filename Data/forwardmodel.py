@@ -1,6 +1,6 @@
 import numpy as np
 import signalresponses
-import PseudoTimeDomain as ptd
+import pseudotimedomain as ptd
 import matplotlib.pyplot as plt
 
 

@@ -1,5 +1,5 @@
 import numpy as np
-import PseudoTimeDomain as ptd
+import pseudotimedomain as ptd
 import matplotlib.pyplot as plt
 
 

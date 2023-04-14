@@ -3,7 +3,7 @@ from scipy.fft import ifft, fft, fftfreq
 import math
 import matplotlib.pyplot as plt
 import scipy.signal as signal
-import PseudoTimeDomain as ptd
+import pseudotimedomain as ptd
 
 
 

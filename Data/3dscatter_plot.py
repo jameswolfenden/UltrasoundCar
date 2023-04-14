@@ -6,7 +6,7 @@ import matplotlib.colors as colors
 import csv
 from pathlib import Path
 import os.path
-import PseudoTimeDomain as ptd
+import pseudotimedomain as ptd
 import scipy.io as sio
 
 
