@@ -31,7 +31,7 @@ def find_saft(x, y, z, sensor_radii, sensor_angles, time_domain_data, time_data,
             # apply the directivity function
             distance_to_centre_of_aperture = np.sqrt(
                 (X-sensor_position_x)**2 + (Y-sensor_position_y)**2)
-            angle_to_centre_of_aperture = np.arctan2(distance_to_centre_of_aperture,Z)
+            angle_to_centre_of_aperture = np.arctan2(distance_to_centre_of_aperture, Z)
             # size of transducer and wavelength are hardcoded
             power_scale = np.sin(np.pi*0.0088/0.008575*np.sin(angle_to_centre_of_aperture)
                                  )/(np.pi*0.0088/0.008575*np.sin(angle_to_centre_of_aperture))
@@ -44,7 +44,7 @@ def plot_sinc_function():
     # polar plot of the sinc function
     theta = np.concatenate((np.linspace(0.001, np.pi/2, 100), np.linspace(3*np.pi/2, 2*np.pi, 100)))
     r = np.sin(np.pi*0.0088/0.008575*np.sin(theta))/(np.pi*0.0088/0.008575*np.sin(theta))
-    #r[r < 0.1] = 0.1
+    # r[r < 0.1] = 0.1
     # plot polar with matplotlib
     fig = plt.figure(figsize=(3, 3))
     ax = fig.add_subplot(111, projection='polar')
@@ -72,7 +72,6 @@ def plot_sinc_function():
     ax.grid(True)
     plt.show()
 
-plot_sinc_function()
 
 def convert_to_db(responses):
     # find the abs of the responses
@@ -156,7 +155,7 @@ def plot_slices(responses, x, y, z, to_plot_x, to_plot_y, to_plot_z):
         title='Slices in volumetric data',
         scene=dict(xaxis_title='z (cm)', yaxis_title='x (cm)', zaxis_title='y (cm)',
                    xaxis=dict(autorange='reversed')),
-                   font=dict(family="verdana", color="Black", size=16),
+        font=dict(family="verdana", color="Black", size=16),
         updatemenus=[
             {
                 "buttons": [
@@ -221,6 +220,50 @@ def plot_isosurface(responses, x, y, z, pipe_radius, isomin=-10):
         colorscale=pipe_color,
         showscale=False,
         opacity=0.1
+    )
+
+    x0 = 20 # z
+    y0 = -5 # x
+    z0 = -2 # y
+    x1 = 26
+    y1 = 5
+    z1 = -12
+
+    vertices = np.array([
+        [x0, y0, z0],  # vertex 0
+        [x1, y0, z0],  # vertex 1
+        [x1, y0, z1],  # vertex 2
+        [x0, y0, z1],  # vertex 3
+        [x0, y1, z0],  # vertex 4
+        [x1, y1, z0],  # vertex 5
+        [x1, y1, z1],  # vertex 6
+        [x0, y1, z1],  # vertex 7
+    ])
+
+    # define the faces of the box
+    faces = np.array([
+        [0, 1, 2],  # face 0
+        [0, 2, 3],  # face 1
+        [1, 5, 6],  # face 2
+        [1, 6, 2],  # face 3
+        [5, 4, 7],  # face 4
+        [5, 7, 6],  # face 5
+        [4, 0, 3],  # face 6
+        [4, 3, 7],  # face 7
+        [3, 2, 6],  # face 8
+        [3, 6, 7],  # face 9
+        [4, 5, 1],  # face 10
+        [4, 1, 0],  # face 11
+    ])
+
+    box = go.Mesh3d(
+        x=vertices[:, 0],
+        y=vertices[:, 1],
+        z=vertices[:, 2],
+        i=faces[:, 0],
+        j=faces[:, 1],
+        k=faces[:, 2],
+        color='rgba(128, 128, 128, 0.2)',
     )
 
     fig3 = go.Figure(data=[isosrfce, srfc])

@@ -8,7 +8,7 @@ import pseudotimedomain as ptd
 
 
 sample_frequency = 10e6
-signal_length_seconds = 0.0004
+signal_length_seconds = 0.0005
 sin_frequency = 40e3
 cycles = 8
 attenuation_rate = 0.6 # dB/m
@@ -27,7 +27,7 @@ signal_result = signal_result*window
 #signal_ping_position = np.arange(0.0002, signal_length_seconds-0.0002, 0.0001)
 # generate a random scale for each ping
 #signal_ping_scale = np.random.rand(len(signal_ping_position))
-signal_ping_position = [0.00015,  0.0003]
+signal_ping_position = [0.00018,  0.00035]
 signal_ping_scale = [0.5, 1]
 
 for i, ping_position in enumerate(signal_ping_position):
@@ -47,6 +47,7 @@ plt.plot(freqs, np.abs(fftthat))
 analogue_gains = [40, 50, 60, 70,80, 100, 120, 140, 200, 250, 300, 350, 400, 500, 600, 700]
 threshold_levels = [1/x*40 for x in analogue_gains]
 threshold_levels = np.linspace(0.3, 0.9, 8)
+threshold_levels = [0.01945474, 0.0287453,  0.03803586, 0.04732642, 0.05661698, 0.0751981, 0.09377923, 0.11236035, 0.16810371, 0.21455651, 0.26100931, 0.30746212, 0.35391492, 0.44682052, 0.53972613, 0.63263173]
 
 # find position of first threshold crossing for each threshold level
 threshold_crossings = np.zeros(len(threshold_levels), dtype=np.int32)

@@ -4,7 +4,7 @@ import os.path
 import csv
 from pathlib import Path
 import signalresponses
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 
 # create a PseudoTimeDomain object
 pseudo_signal = ptd.PseudoTimeDomain(8, 20)
@@ -15,7 +15,7 @@ sensor_radii = [7.5]
 gain_time = []
 # load data
 for sensor_radius in sensor_radii:
-    with open(os.path.join(Path(__file__).resolve().parents[1], os.path.join("Robot", os.path.join("UploadFolder", os.path.join("clearpipe", "scan_data_time_"+str(sensor_radius)+".csv")))), newline='') as f:
+    with open(os.path.join(Path(__file__).resolve().parents[1], os.path.join("Robot", os.path.join("UploadFolder", os.path.join("block1-20", "scan_data_time_"+str(sensor_radius)+".csv")))), newline='') as f:
         reader = csv.reader(f)
         gain_time_temp = list(reader)
     gain_time_2d = []
@@ -41,12 +41,12 @@ for i, sensor_radius in enumerate(sensor_radii):
 print("Ping positions found")
 
 # plot the first response against distance
-# plt.figure()
-# for i in range(len(sensor_radii)):
-#     plt.plot(pseudo_signal.distance, pseudo_signal.signal_responses[:, i])
-# plt.xlabel('Distance (m)')
-# plt.ylabel('Signal strength')
-# plt.show()
+plt.figure()
+for i in range(len(sensor_radii)):
+    plt.plot(pseudo_signal.distance, pseudo_signal.signal_responses[:, :])
+plt.xlabel('Distance (m)')
+plt.ylabel('Signal strength')
+plt.show()
 
 x = np.linspace(-0.17, 0.17, 51)
 y = np.linspace(-0.17, 0.17, 51)
@@ -63,6 +63,6 @@ to_plot_x = int(1*len(x)/2)
 to_plot_y = int(1*len(y)/2)
 to_plot_z = int(1*len(z)/2)
 
-signalresponses.plot_slices(responses, x, y, z, to_plot_x, to_plot_y, to_plot_z)
+#signalresponses.plot_slices(responses, x, y, z, to_plot_x, to_plot_y, to_plot_z)
 
 signalresponses.plot_isosurface(responses, x, y, z, pipe_radius)

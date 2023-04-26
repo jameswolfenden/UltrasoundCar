@@ -6,11 +6,10 @@ import matplotlib.pyplot as plt
 
 # Define simulation parameters
 radius = 0.15  # radius of pipe in meters
-diameter = 2 * radius
 length = 1.0  # length of pipe in meters
 frequency = 40000.0  # ultrasound frequency in Hz
 c = 343.0  # speed of sound in air in m/s
-attenuation = 0.2 # Np/m, check this
+attenuation = 0.15 # Np/m, check this
 
 # Define transducer parameters
 transducer_radius = 0.075  # radius of transducer from centre of pipe in meters
@@ -21,9 +20,10 @@ transducer_z = 0.0  # z coordinate of transducer in meters
 
 # Define points at the radius of the pipe
 point_angle = np.linspace(0, 2 * np.pi, 100, endpoint=False)  # angle of point from centre of pipe in radians
+#point_angle = [0.0]
 point_x = radius * -np.cos(point_angle)  # x coordinate of point in meters
 point_y = radius * np.sin(point_angle)  # y coordinate of point in meters
-point_z = np.linspace(0, length, 100)  # z coordinate of point in meters
+point_z = np.linspace(0, length, 200)  # z coordinate of point in meters
 
 #point_x = [0.0]
 #point_y = [0.0]
@@ -45,6 +45,7 @@ time = np.linspace(0, time_length, time_samples)  # time vector in seconds
 
 # Create empty array to store data
 data = np.zeros((len(time), len(transducer_angle)))
+data2 = np.zeros((len(time), len(transducer_angle)))
 
 level = np.zeros((len(transducer_angle),len(point_angle), len(point_z)))
 
@@ -59,17 +60,21 @@ for i in range(len(transducer_angle)):
             time_delay = 2 * distance / c
             # Calculate time index for data
             time_index = np.argmin(np.abs(time - time_delay)) - int(pulse_samples / 2)
+            time_index2 = np.argmin(np.abs(time - time_delay))
             # Calculate angle from transducer to point
             angle = np.arccos(np.abs(transducer_z - point_z[k]) / distance)
             # sinc function to model transducer
             sinc = np.sin(np.pi*0.0088/0.008575*np.sin(angle))/(np.pi*0.0088/0.008575*np.sin(angle))
             # Account for attenuation
             attenuation_scale = np.exp(-attenuation * distance * 2)
+            # Account for beam spreading
+            power_scale = 1/(distance * 2)
             if sinc < 0:
                 sinc = 0
             # Add pulse to data
-            data[time_index:time_index + pulse_samples,i] = data[time_index:time_index + pulse_samples,i] + pulse*sinc*attenuation_scale
-            level[i,j,k] = attenuation_scale
+            data[time_index:time_index + pulse_samples,i] = data[time_index:time_index + pulse_samples,i] + pulse*sinc*attenuation_scale*power_scale
+            data2[time_index:time_index + pulse_samples,i] = data2[time_index:time_index + pulse_samples,i] + 1*sinc*attenuation_scale*power_scale
+            level[i,j,k] = sinc*attenuation_scale*power_scale
 
 # plot level[0,:,:] using imshow
 fig = plt.figure()
@@ -87,14 +92,16 @@ plt.show()
 # simulate srf10
 # 16 threshold levels
 analogue_gains = [40, 50, 60, 70,80, 100, 120, 140, 200, 250, 300, 350, 400, 500, 600, 700]
-threshold_multiplier = 20 # to account for the fact that the signal amplitude is arbitrary so we need to scale it
-threshold_addition = 2
+threshold_multiplier = 1 # to account for the fact that the signal amplitude is arbitrary so we need to scale it
+threshold_addition = 0
 threshold_levels = [1/x*40*threshold_multiplier+threshold_addition for x in analogue_gains]
+
+
 
 # find position of first threshold crossing for each threshold level
 threshold_crossings = np.zeros((len(transducer_angle), len(threshold_levels)), dtype=np.int32)
 for i, threshold_level in enumerate(threshold_levels):
-    threshold_crossings[:,i] = np.argmax(data > threshold_level, axis=0)
+    threshold_crossings[:,i] = np.argmax(data/np.max(data) > threshold_level, axis=0)
 
 print('Threshold crossings: ', threshold_crossings)
 
@@ -110,7 +117,16 @@ for i, threshold_crossing in enumerate(threshold_crossings[0,:]):
     ax.plot([0, threshold_crossing], [(data[threshold_crossing,0]), (data[threshold_crossing,0])], 'k-')
 ax.set_xlabel('Time')
 ax.set_ylabel('Signal strength')
+#plt.show()
+
+# plot data2
+fig = plt.figure()
+ax = fig.add_subplot(111)
+ax.plot((data2[:,0]))
+ax.set_xlabel('Time')
+ax.set_ylabel('Signal strength')
 plt.show()
+
 
 pseudo_signal = ptd.PseudoTimeDomain(8, 20)
 pseudo_signal.positionPings2D(threshold_crossings, time_length*1e6)
@@ -130,8 +146,7 @@ time_data = np.arange(0, data.shape[0]*timestep, timestep)
 # convert time to distance
 time_data = time_data*343/2
 
-
-srf_sim = True
+srf_sim = False
 real_data = True
 
 if real_data:

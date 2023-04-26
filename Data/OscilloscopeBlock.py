@@ -39,7 +39,7 @@ if scp:
         scp.sample_frequency = 1e6  # 1 MHz
 
         # Set record length:
-        scp.record_length = 50000  # 50000 samples
+        scp.record_length = 2000000  # 50000 samples
 
         # Set pre sample ratio:
         scp.pre_sample_ratio = 0  # 0 %
@@ -72,7 +72,7 @@ if scp:
         ch.trigger.kind = libtiepie.TK_RISINGEDGE  # Rising edge
 
         # Level:
-        ch.trigger.levels[0] = 0.5  # 50 %
+        ch.trigger.levels[0] = 0.8  # 50 %
 
         # Hysteresis:
         ch.trigger.hystereses[0] = 0.05  # 5 %
@@ -91,17 +91,17 @@ if scp:
         data = scp.get_data()
 
         # Output CSV data:
-        csv_file = open('OscilloscopeBlock.csv', 'w')
+        csv_file = open('pipe1020gain1.csv', 'w')
         try:
             csv_file.write('Sample')
             for i in range(len(data)):
                 csv_file.write(',Ch' + str(i + 1))
-            csv_file.write(os.linesep)
+            csv_file.write('\n')
             for i in range(len(data[0])):
                 csv_file.write(str(i))
                 for j in range(len(data)):
                     csv_file.write(',' + str(data[j][i]))
-                csv_file.write(os.linesep)
+                csv_file.write('\n')
 
             print()
             print('Data written to: ' + csv_file.name)
