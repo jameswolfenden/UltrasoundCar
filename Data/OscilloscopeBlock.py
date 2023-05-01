@@ -91,7 +91,7 @@ if scp:
         data = scp.get_data()
 
         # Output CSV data:
-        csv_file = open('pipe1020gain1.csv', 'w')
+        csv_file = open('plate70pole40-3gain16.csv', 'w')
         try:
             csv_file.write('Sample')
             for i in range(len(data)):

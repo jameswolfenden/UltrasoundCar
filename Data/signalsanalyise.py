@@ -4,12 +4,14 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 valid_gains = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 15, 16] # 12 is broken
+valid_gains = [1, 16]
 analogue_gains = [40, 50, 60, 70,80, 100, 120, 140, 200, 250, 300, 350, 400, 500, 600, 700]
 # use only the valid gains
 analogue_gains_new = [analogue_gains[i-1] for i in valid_gains]
 
 detected_times = [4153, 4157, 4130, 4133, 4129, 4108, 4105, 4108, 4083, 3147, 3024, 2459, 2949, 2410, 2381, 2360]
 detected_times_new = [detected_times[i-1] for i in valid_gains]
+detected_times_new = [4025, 4005, 4002, 4005, 4001, 3980, 2641, 2716, 2440, 2435, 2368, 2387, 2335, 2314, 2285, 2285] # idk
 
 
 outer_pulses = []
@@ -18,7 +20,7 @@ outer_peaks = []
 # read in the data from the csv file for each gain
 for gain in valid_gains:
     # read in the data from the csv file
-    data = pd.read_csv('plate70pole40gain' + str(gain) + '.csv')
+    data = pd.read_csv('plate70pole40-3gain' + str(gain) + '.csv')
     # find the indexes where ch1 is below 0.5
     indexes = np.where(data['Ch1'] < 0.5)[0]
     # find the indexes where the next value of ch1 is above 0.5
@@ -74,13 +76,13 @@ print(gain_scales)
 # plot the median peaks against the analogue gain and the fit
 plt.figure(figsize=(5,3.5))
 plt.plot(analogue_gains, fit[0]*np.array(analogue_gains) + fit[1], linewidth=2)
-plt.plot(analogue_gains_new, median_peaks, 'rx', linewidth=2)
-plt.plot(analogue_gains[11], fit[0]*np.array(analogue_gains[11]) + fit[1], 'rx', linewidth=2)
+plt.plot(analogue_gains_new, median_peaks, 'x', linewidth=2, color='tab:red')
+plt.plot(analogue_gains[11], fit[0]*np.array(analogue_gains[11]) + fit[1], 'x', linewidth=2, color='tab:red')
 #plt.plot(analogue_gains, fit[0]*np.array(analogue_gains) + fit[1], '.')
 plt.subplots_adjust(left=0.12, right=0.98, top=0.92, bottom=0.13)
-plt.title('Relative Response Against Analogue Gain')
+plt.title('Relative Amplitude Against Analogue Gain')
 plt.xlabel('Analogue Gain')
-plt.ylabel('Relative Response')
+plt.ylabel('Relative Amplitude')
 plt.show()
 
 
@@ -95,7 +97,7 @@ plt.show()
 to_plot = outer_pulses[0][1][0:5000]-median_means
 plt.figure(figsize=(7,3))
 plt.xlabel('Time (μs)')
-plt.ylabel('Voltage (V)')
+plt.ylabel('Signal Amplitude (V)')
 plt.title('Lowest Gain')
 plt.ylim(-3,3)
 plt.xlim(0,5000)
@@ -103,15 +105,15 @@ plt.minorticks_on()
 plt.subplots_adjust(left=0.08, right=0.97, top=0.92, bottom=0.15)
 # plot vertical line at the detected times
 for i in range(len(detected_times_new)):
-    plt.axvline(detected_times_new[i], color='r', linewidth=0.3)
-plt.axvline(detected_times_new[0], color='g', linewidth=2)
+    plt.axvline(detected_times_new[i], color='tab:red', linewidth=0.3)
+plt.axvline(detected_times_new[0], color='tab:green', linewidth=2)
 plt.plot(to_plot, linewidth=2)
 
 # plot the last pulse for the last gain
 to_plot = outer_pulses[-1][1][0:5000]-median_means
 plt.figure(figsize=(7,3))
 plt.xlabel('Time (μs)')
-plt.ylabel('Voltage (V)')
+plt.ylabel('Signal Amplitude (V)')
 plt.title('Highest Gain')
 plt.ylim(-3, 3)
 plt.xlim(0, 5000)
@@ -119,8 +121,8 @@ plt.minorticks_on()
 plt.subplots_adjust(left=0.08, right=0.97, top=0.92, bottom=0.15)
 # plot vertical line at the detected times
 for i in range(len(detected_times_new)):
-    plt.axvline(detected_times_new[i], color='r', linewidth=0.3)
-plt.axvline(detected_times_new[-1], color='g', linewidth=2)
+    plt.axvline(detected_times_new[i], color='tab:red', linewidth=0.3)
+plt.axvline(detected_times_new[-1], color='tab:green', linewidth=2)
 plt.plot(to_plot, linewidth=2)
 plt.show()
 

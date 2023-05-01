@@ -73,12 +73,15 @@ def plot_sinc_function():
     plt.show()
 
 
-def convert_to_db(responses):
+def convert_to_db(responses, *args):
     # find the abs of the responses
     responses = np.abs(responses)
     responses[responses == 0] = 1e-10
     # convert to db
-    responses = 20*np.log10(responses/np.max(responses))
+    if len(args) == 0:
+        responses = 20*np.log10(responses/np.max(responses))
+    else:
+        responses = 20*np.log10(responses/args[0])
     return responses
 
 
@@ -189,7 +192,7 @@ def plot_isosurface(responses, x, y, z, pipe_radius, isomin=-10):
     Y_plot = X.flatten() * 1e2
     Z_plot = Y.flatten() * 1e2
     value_plot = responses
-    value_plot[X**2 + Y**2 > (pipe_radius*1.1)**2] = -9999
+    value_plot[X**2 + Y**2 > (pipe_radius*1.05)**2] = -9999 # remove values outside pipe
     value_plot = value_plot.flatten()
 
     isosrfce = go.Isosurface(
@@ -268,15 +271,68 @@ def plot_isosurface(responses, x, y, z, pipe_radius, isomin=-10):
 
     fig3 = go.Figure(data=[isosrfce, srfc])
 
-    # camera = dict(eye=dict(x=1.5, y=2.5, z=0.6))
-    # fig3.update_layout(scene_camera = camera)
-    # fig3.update_layout(scene_aspectmode='data')
-    # fig3.update_layout(margin=dict(r=10, b=10, l=10, t=10))
+    camera = dict(eye=dict(x=1.25, y=1.25, z=1.25), center=dict(x=0, y=-0.1, z=-0.1))
+    fig3.update_layout(scene_camera = camera)
+    fig3.update_layout(scene_aspectmode='data')
+    fig3.update_layout(margin=dict(r=10, b=10, l=10, t=10))
     fig3.update_layout(scene=dict(xaxis_title='z (cm)', yaxis_title='x (cm)', zaxis_title='y (cm)',
                        xaxis=dict(autorange='reversed')), font=dict(family="verdana", color="Black", size=16))
-    # fig3.update_layout(
-    #     width=2000,
-    #     height=2000,
-    # )
-    # fig3.write_image("fig3.svg")
+    fig3.update_layout(
+        width=700,
+        height=500,
+    )
+    fig3.write_image("fig3.svg")
+    fig3.show()
+
+def plot_entire_pipe_isosurface(responses_s, x_s, y_s, z_s, pipe_radius, isomin=-10):
+    surfaces = []
+    for i in range(len(responses_s)):
+        responses = responses_s[i]
+        x = x_s[i]
+        y = y_s[i]
+        z = z_s[i]
+        X, Y, Z = np.meshgrid(x, y, z, indexing='ij')
+        X_plot = Z.flatten() * 1e2
+        Y_plot = X.flatten() * 1e2
+        Z_plot = Y.flatten() * 1e2
+        value_plot = responses
+        value_plot[X**2 + Y**2 > (pipe_radius*1.1)**2] = -9999
+        value_plot = value_plot.flatten()
+
+        isosrfce = go.Isosurface(
+            x=X_plot,
+            y=Y_plot,
+            z=Z_plot,
+            value=value_plot,
+            isomin=isomin,
+            isomax=0,
+            caps=dict(x_show=False, y_show=False),
+            colorscale='jet',
+            surface_count=10,
+            opacity=0.3
+        )
+        surfaces.append(isosrfce)
+
+    # Plot Pipe Wall
+    pipe_theta = np.linspace(0, 2*np.pi, 100)
+    pipe_ang, Z_pipe = np.meshgrid(pipe_theta, [0, z_s[-1][-1]])
+    X_pipe = pipe_radius * np.cos(pipe_ang)
+    Y_pipe = pipe_radius * np.sin(pipe_ang)
+    pipe_color = [[0, 'red'],
+                  [1, 'red']]
+    srfc = go.Surface(
+        x=Z_pipe * 1e2,
+        y=X_pipe * 1e2,
+        z=Y_pipe * 1e2,
+        colorscale=pipe_color,
+        showscale=False,
+        opacity=0.1
+    )
+    surfaces.append(srfc)
+
+    fig3 = go.Figure(data=surfaces)
+
+    fig3.update_layout(scene_aspectmode='data')
+    fig3.update_layout(scene=dict(xaxis_title='z (cm)', yaxis_title='x (cm)', zaxis_title='y (cm)',
+                       xaxis=dict(autorange='reversed')), font=dict(family="verdana", color="Black", size=16))
     fig3.show()
