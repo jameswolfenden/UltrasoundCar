@@ -6,7 +6,16 @@ print("hello")
 
 gain = range(1,17,1) # gain
 
+car.srf_1.set_range(254)
 
-for g in gain:
-    car.srf_2.set_gain(g)
-    print("gain ", g, " distance: ", car.srf_2.read_distance(0.07))
+gain_time = []
+while True:
+    for g in gain:
+        car.srf_1.set_gain(g)
+        readfrom = car.srf_1.read_distance(0.5)
+        print("gain ", g, " distance: ", readfrom)
+#        gain_time.append(readfrom)
+
+
+#with open("attenuation_data5.csv", "a") as f:
+#    f.write(str(gain_time))

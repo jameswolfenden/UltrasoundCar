@@ -1,6 +1,6 @@
 import numpy as np
 import plotly.graph_objects as go
-from scipy.interpolate import interp1d
+from scipy.interpolate import CubicSpline
 from scipy.signal import hilbert
 import matplotlib.pyplot as plt
 
@@ -25,7 +25,7 @@ def find_saft(x, y, z, sensor_radii, sensor_angles, time_domain_data, time_data,
             sensor_position_y = sensor_radius * np.cos(np.radians(angle))
             distance_to_sensor = np.sqrt((X-sensor_position_x)**2 + (Y-sensor_position_y)**2 + (Z)**2)
             # interpolate the signal response to the delay
-            interpolated_response_f = interp1d(time_data, time_domain_data[rad_i, :, i], axis=0)
+            interpolated_response_f = CubicSpline(time_data, time_domain_data[rad_i, :, i], axis=0)
             interpolated_response = interpolated_response_f(distance_to_sensor)
 
             # apply the directivity function
@@ -186,13 +186,13 @@ def plot_slices(responses, x, y, z, to_plot_x, to_plot_y, to_plot_z):
     fig2.show()
 
 
-def plot_isosurface(responses, x, y, z, pipe_radius, isomin=-10):
+def plot_isosurface(responses, x, y, z, pipe_radius, isomin=-10, big=False):
     X, Y, Z = np.meshgrid(x, y, z, indexing='ij')
     X_plot = Z.flatten() * 1e2
     Y_plot = X.flatten() * 1e2
     Z_plot = Y.flatten() * 1e2
     value_plot = responses
-    value_plot[X**2 + Y**2 > (pipe_radius*1.05)**2] = -9999 # remove values outside pipe
+    value_plot[X**2 + Y**2 > (pipe_radius*1.05)**2] = -9999  # remove values outside pipe
     value_plot = value_plot.flatten()
 
     isosrfce = go.Isosurface(
@@ -225,9 +225,9 @@ def plot_isosurface(responses, x, y, z, pipe_radius, isomin=-10):
         opacity=0.1
     )
 
-    x0 = 20 # z
-    y0 = -5 # x
-    z0 = -2 # y
+    x0 = 20  # z
+    y0 = -5  # x
+    z0 = -2  # y
     x1 = 26
     y1 = 5
     z1 = -12
@@ -270,19 +270,36 @@ def plot_isosurface(responses, x, y, z, pipe_radius, isomin=-10):
     )
 
     fig3 = go.Figure(data=[isosrfce, srfc])
+    if big:
+        camera = dict(eye=dict(x=2, y=2, z=2), center=dict(x=0, y=-0.8, z=-0.8))
+        fig3.update_layout(
+            width=900,
+            height=600,
+        )
+        fig3.update_layout(
+            scene=dict(
+                xaxis_title='z (cm)', yaxis_title='x (cm)', zaxis_title='y (cm)',
+                xaxis=dict(autorange='reversed')),
+            font=dict(family="CMU Serif", color="Black", size=12))
 
-    camera = dict(eye=dict(x=1.25, y=1.25, z=1.25), center=dict(x=0, y=-0.1, z=-0.1))
-    fig3.update_layout(scene_camera = camera)
+    else:
+        camera = dict(eye=dict(x=1.25, y=-1.25, z=1.25), center=dict(x=0, y=0, z=-0.25))
+        fig3.update_layout(
+            width=700,
+            height=500,
+        )
+        fig3.update_layout(
+            scene=dict(
+                xaxis_title='z (cm)', yaxis_title='x (cm)', zaxis_title='y (cm)',
+                xaxis=dict(autorange='reversed')),
+            font=dict(family="CMU Serif", color="Black", size=16))
+
+    fig3.update_layout(scene_camera=camera)
     fig3.update_layout(scene_aspectmode='data')
     fig3.update_layout(margin=dict(r=10, b=10, l=10, t=10))
-    fig3.update_layout(scene=dict(xaxis_title='z (cm)', yaxis_title='x (cm)', zaxis_title='y (cm)',
-                       xaxis=dict(autorange='reversed')), font=dict(family="verdana", color="Black", size=16))
-    fig3.update_layout(
-        width=700,
-        height=500,
-    )
     fig3.write_image("fig3.svg")
     fig3.show()
+
 
 def plot_entire_pipe_isosurface(responses_s, x_s, y_s, z_s, pipe_radius, isomin=-10):
     surfaces = []
@@ -332,7 +349,15 @@ def plot_entire_pipe_isosurface(responses_s, x_s, y_s, z_s, pipe_radius, isomin=
 
     fig3 = go.Figure(data=surfaces)
 
+    camera = dict(eye=dict(x=1.25, y=1.25, z=1.25), center=dict(x=0, y=-0.1, z=-0.5))
+    fig3.update_layout(scene_camera=camera)
     fig3.update_layout(scene_aspectmode='data')
+    fig3.update_layout(margin=dict(r=10, b=10, l=10, t=10))
     fig3.update_layout(scene=dict(xaxis_title='z (cm)', yaxis_title='x (cm)', zaxis_title='y (cm)',
                        xaxis=dict(autorange='reversed')), font=dict(family="verdana", color="Black", size=16))
+    fig3.update_layout(
+        width=800,
+        height=500,
+    )
+    fig3.write_image("fig3.svg")
     fig3.show()

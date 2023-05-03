@@ -11,11 +11,13 @@ pseudo_signal = ptd.PseudoTimeDomain(8, 20)
 
 pipe_radius = 150 * 1e-3
 sensor_radii = [7.5]
+max_gain = 8
+max_gain=16
 
 gain_time = []
 # load data
 for sensor_radius in sensor_radii:
-    with open(os.path.join(Path(__file__).resolve().parents[1], os.path.join("Robot", os.path.join("UploadFolder", os.path.join("block1-60", "scan_data_time_"+str(sensor_radius)+".csv")))), newline='') as f:
+    with open(os.path.join(Path(__file__).resolve().parents[1], os.path.join("Robot", os.path.join("UploadFolder", os.path.join("fullpipe", "scan_"+str(210)+".csv")))), newline='') as f:
         reader = csv.reader(f)
         gain_time_temp = list(reader)
     gain_time_2d = []
@@ -25,6 +27,11 @@ for sensor_radius in sensor_radii:
     gain_time.append(gain_time_2d)
 
 sensor_angles = np.arange(0, 360, int(360/len(gain_time[0])))-100  # start at 9 o'clock - i changed this because its seems to always be offset by 10 ish degrees
+
+# crop gain_time by max gain in the 3rd dimension
+for i, sensor_radius in enumerate(sensor_radii):
+    for j, angle in enumerate(sensor_angles):
+        gain_time[i][j] = gain_time[i][j][:max_gain]
 
 # use the pseudo time domain object to find the responses using the gain time data
 # important the [0]!!!!!!!!!!
@@ -60,13 +67,13 @@ plt.show()
 
 x = np.linspace(-0.17, 0.17, 51)
 y = np.linspace(-0.17, 0.17, 51)
-z = np.linspace(0.01, 0.80, 80) # increase
+z = np.linspace(0.01, 0.90, 90) # increase
 
 responses = signalresponses.find_saft(x,y,z,[x/100 for x in sensor_radii], sensor_angles, responses_3d, pseudo_signal.distance, True)
 
 print("saft complete")
 
-responses = signalresponses.convert_to_db(responses,2)
+responses = signalresponses.convert_to_db(responses)
 
 # plot the responses
 to_plot_x = int(1*len(x)/2)
@@ -75,4 +82,4 @@ to_plot_z = int(1*len(z)/2)
 
 #signalresponses.plot_slices(responses, x, y, z, to_plot_x, to_plot_y, to_plot_z)
 
-signalresponses.plot_isosurface(responses, x, y, z, pipe_radius, -6)
+signalresponses.plot_isosurface(responses, x, y, z, pipe_radius, -16)

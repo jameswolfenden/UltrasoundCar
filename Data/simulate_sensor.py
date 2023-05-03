@@ -4,6 +4,10 @@ import math
 import matplotlib.pyplot as plt
 import scipy.signal as signal
 import pseudotimedomain as ptd
+import matplotlib.font_manager as fm
+
+fm.fontManager.addfont('C:\\Users\\wolfe\\AppData\\Local\\Microsoft\\Windows\\Fonts\\cmunrm.ttf')
+
 
 
 
@@ -62,6 +66,9 @@ pseudo_signal.positionPings2D([np.int32(threshold_crossings/10)], signal_length_
 
 # plot the time domain response and the threshold crossings on the same plot
 plt.figure(figsize=(5, 4))
+plt.rcParams["font.family"] = "serif"
+plt.rcParams["font.serif"] = ["CMU Serif"]
+plt.rc('axes', unicode_minus=False)
 plt.plot([], label="Signal", linewidth=1, color='tab:blue')
 plt.plot([], label="Threshold levels", linewidth=1, color='tab:green')
 plt.plot([], 'x', label="Threshold crossings", color='tab:red')
@@ -80,7 +87,10 @@ plt.subplots_adjust(left=0.15, right=0.98, bottom=0.15, top=0.92)
 plt.title('Sensor Threshold Interactions with a Signal')
 
 # plot the responses together
-fig = plt.figure(figsize=(3.1, 3))
+fig = plt.figure(figsize=(3.3, 3))
+plt.rcParams["font.family"] = "serif"
+plt.rcParams["font.serif"] = ["CMU Serif"]
+plt.rc('axes', unicode_minus=False)
 #plt.plot(time,time_response)
 plt.plot(np.arange(0, pseudo_signal.signal_end, 1/pseudo_signal.sample_frequency), pseudo_signal.signal_responses, linewidth=1, color='tab:blue')
 plt.xlabel('Time (μs)')
@@ -88,18 +98,21 @@ plt.ylabel('Relative Amplitude')
 plt.title('Reproduced Signal')
 plt.ylim(-1.1, 1.1)
 plt.xlim(0, 430)
-fig.subplots_adjust(left=0.25, right=0.95, bottom=0.15, top=0.85)
+fig.subplots_adjust(left=0.18, right=0.95, bottom=0.15, top=0.85)
 plt.savefig('newsig.svg')
 
 # plot signal_result
-fig = plt.figure(figsize=(3.1,3))
+fig = plt.figure(figsize=(3.3,3))
+plt.rcParams["font.family"] = "serif"
+plt.rcParams["font.serif"] = ["CMU Serif"]
+plt.rc('axes', unicode_minus=False)
 plt.plot(np.arange(0, len(signal_result), 1)/sample_frequency*1e6, signal_result.real, linewidth=1, color='tab:blue')
 plt.xlabel('Time (μs)')
 plt.ylabel('Relative Amplitude')
 plt.title('Synthesised Wave Packet')
 plt.ylim(-1.1, 1.1)
 # increase left and right margins to fit the title
-fig.subplots_adjust(left=0.25, right=0.95, bottom=0.15, top=0.85)
+fig.subplots_adjust(left=0.18, right=0.95, bottom=0.15, top=0.85)
 plt.savefig('packet.svg')
 
 
