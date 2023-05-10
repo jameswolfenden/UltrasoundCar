@@ -5,9 +5,9 @@ import matplotlib.pyplot as plt
 import scipy.signal as signal
 import pseudotimedomain as ptd
 import matplotlib.font_manager as fm
+import matplotlib.animation as animation 
 
 fm.fontManager.addfont('C:\\Users\\wolfe\\AppData\\Local\\Microsoft\\Windows\\Fonts\\cmunrm.ttf')
-
 
 
 
@@ -43,10 +43,6 @@ for i, ping_position in enumerate(signal_ping_position):
 # apply attenuation
 #time_response = time_response*np.exp(attenuation_rate*np.arange(0, len(time_response))/sample_frequency*343*(10**-6)/2)
 
-fftthat = fft(time_response)
-freqs = fftfreq(len(time_response), 1/sample_frequency)
-plt.plot(freqs, np.abs(fftthat))
-
 # 16 threshold levels
 analogue_gains = [40, 50, 60, 70,80, 100, 120, 140, 200, 250, 300, 350, 400, 500, 600, 700]
 threshold_levels = [1/x*40 for x in analogue_gains]
@@ -61,62 +57,55 @@ for i, threshold_level in enumerate(threshold_levels):
 print('Threshold crossings: ', threshold_crossings)
 
 pseudo_signal = ptd.PseudoTimeDomain(8, 20)
-pseudo_signal.positionPings2D([np.int32(threshold_crossings/10)], signal_length_seconds*1e6)
-
-
-# plot the time domain response and the threshold crossings on the same plot
-plt.figure(figsize=(3.3, 4))
-plt.rcParams["font.family"] = "serif"
-plt.rcParams["font.serif"] = ["CMU Serif"]
-plt.rc('axes', unicode_minus=False)
-plt.plot([], label="Signal", linewidth=1, color='tab:blue')
-plt.plot([], label="Threshold levels", linewidth=1, color='tab:green')
-plt.plot([], 'x', label="Threshold crossings", color='tab:red')
-#plt.plot([], 'r:', label="Threshold crossing positions")
-plt.plot(time,time_response, linewidth=1, color='tab:blue')
-# plot line from x axis to threshold crossing
+pseudo_dts = np.zeros((len(threshold_crossings), int(20*0.04*signal_length_seconds*1e6)), dtype=np.complex128)
 for i, threshold_crossing in enumerate(threshold_crossings):
-    #plt.plot([time[threshold_crossing], time[threshold_crossing]], [0, threshold_levels[i]], 'r:', linewidth=1)
-    # plot line from y axis to threshold crossing
-    plt.plot([0, time[threshold_crossing]], [threshold_levels[i], threshold_levels[i]], '-', linewidth=1, color='tab:green')
-plt.plot(time[threshold_crossings], threshold_levels, 'x', color='tab:red')
-plt.xlabel('Time (μs)')
-plt.ylabel('Relative Amplitude')
-plt.legend(loc='lower left')
-plt.ylim(-1.1, 1.1)
-plt.xlim(0, 470)
-plt.subplots_adjust(left=0.18, right=0.97, bottom=0.13, top=0.99)
-#plt.title('Sensor Threshold Interactions with a Signal')
-plt.savefig('simsig.svg')
+    pseudo_signal.positionPings2D([np.int32(threshold_crossings[:i+1]/10)], signal_length_seconds*1e6)
+    pseudo_dts[i] = pseudo_signal.signal_responses[:,0]
 
-# plot the responses together
-fig = plt.figure(figsize=(3.3, 4))
+
+
+# animate a figure of each threshold level for each frame
 plt.rcParams["font.family"] = "serif"
 plt.rcParams["font.serif"] = ["CMU Serif"]
 plt.rc('axes', unicode_minus=False)
-#plt.plot(time,time_response)
-plt.plot(np.arange(0, pseudo_signal.signal_end, 1/pseudo_signal.sample_frequency), pseudo_signal.signal_responses, linewidth=1, color='tab:blue')
-plt.xlabel('Time (μs)')
-plt.ylabel('Relative Amplitude')
-#plt.title('Reproduced Signal')
-plt.ylim(-1.1, 1.1)
-plt.xlim(0, 470)
-plt.subplots_adjust(left=0.18, right=0.97, bottom=0.13, top=0.99)
-plt.savefig('newsig.svg')
+fig, (ax1, ax2) = plt.subplots(1, 2)
+fig.set_size_inches(12, 6)
+fig.set_dpi(200)
+ax1.set_xlim(0, signal_length_seconds*1e6)
+ax2.set_xlim(0, signal_length_seconds*1e6)
+ax1.set_ylim(-1.1, 1.1)
+ax2.set_ylim(-1.1, 1.1)
+ax1.plot(time,time_response, linewidth=1, color='tab:blue')
+ax1.plot([], label="Real Signal", linewidth=1, color='tab:blue')
+ax1.plot([], label="Threshold levels", linewidth=1, color='tab:green')
+ax1.plot([], 'x', label="Threshold crossings", color='tab:red')
+ax1.set_xlabel('Time (μs)')
+ax1.set_ylabel('Relative Amplitude')
+ax2.set_xlabel('Time (μs)')
+ax2.set_ylabel('Relative Amplitude')
+ax1.legend(loc='lower left')
+ax2.plot([], label="Reproduced Signal", linewidth=1, color='tab:blue')
+ax2.legend(loc='lower left')
+line, = ax1.plot([], [], '-', linewidth=1, color='tab:green')
+line1, = ax1.plot([], [], 'x', color='tab:red')
+line2, = ax2.plot([], [], linewidth=1, color='tab:blue')
 
-# plot signal_result
-fig = plt.figure(figsize=(3.3,3))
-plt.rcParams["font.family"] = "serif"
-plt.rcParams["font.serif"] = ["CMU Serif"]
-plt.rc('axes', unicode_minus=False)
-plt.plot(np.arange(0, len(signal_result), 1)/sample_frequency*1e6, signal_result.real, linewidth=1, color='tab:blue')
-plt.xlabel('Time (μs)')
-plt.ylabel('Relative Amplitude')
-#plt.title('Synthesised Wave Packet')
-plt.ylim(-1.1, 1.1)
-# increase left and right margins to fit the title
-fig.subplots_adjust(left=0.18, right=0.97, bottom=0.15, top=0.99)
-plt.savefig('packet.svg')
+def init():
+    line.set_data([], [])
+    line2.set_data([], [])
+    line1.set_data([], [])
+    return line, line2, line1
 
+def animate(i):
+    if i == 0:
+        line2.set_data([0,1000], [0,0])
+    else:
+        line.set_data([0, time[threshold_crossings[i-1]]], [threshold_levels[i-1], threshold_levels[i-1]])
+        line1.set_data(time[threshold_crossings[:i]], threshold_levels[:i])
+        line2.set_data(np.arange(0, pseudo_signal.signal_end, 1/pseudo_signal.sample_frequency), pseudo_dts[i-1,:])
+    return line,line2,line1
 
-plt.show()
+anim = animation.FuncAnimation(fig, animate, init_func=init,
+                                 frames=len(threshold_levels)+1, interval=1000, blit=True)
+anim.save('test.mp4', writer = 'ffmpeg', fps = 1, bitrate=-1)
+#plt.show()

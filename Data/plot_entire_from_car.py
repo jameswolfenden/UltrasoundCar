@@ -28,7 +28,7 @@ for distance in scan_distances:
 
 # reduce scan_distances by i*1 each
 for i, distance in enumerate(scan_distances):
-    scan_distances[i] = distance - i*2.5
+    scan_distances[i] = distance - i*2
 
 sensor_angles = np.arange(0, 360, int(360/len(gain_time[0])))-90  # start at 9 o'clock
 
@@ -47,9 +47,9 @@ for i, distance in enumerate(scan_distances):
 print("Ping positions found")
 
 
-x = np.linspace(-0.16, 0.16, 25)
-y = np.linspace(-0.16, 0.16, 25)
-z = np.linspace(0.01, 0.30, 15)
+x = np.linspace(-0.16, 0.16, 50)
+y = np.linspace(-0.16, 0.16, 50)
+z = np.linspace(0.01, 0.30, 60)
 d_z = z[1]-z[0]
 
 responses = np.zeros((len(scan_distances), len(x), len(y), len(z)), dtype=np.complex128)
@@ -65,6 +65,8 @@ z_max_index = len(z) + z_offets_indexes[-1]
 responses_combined = np.zeros((len(x), len(y), z_max_index), dtype=np.float64)
 for i in range(len(scan_distances)):
     responses_combined[:, :, z_offets_indexes[i]:z_offets_indexes[i]+len(z)] += np.abs(responses[i])
+z_ignore = 0.15
+responses_combined[:, :, :int(z_ignore/d_z)] = 0
 
 responses_combined = signalresponses.convert_to_db(responses_combined)
 
@@ -72,4 +74,9 @@ print("saft complete")
 
 z_new = np.linspace(z[0], z_max, z_max_index)
 
-signalresponses.plot_isosurface(responses_combined, x, y, z_new, pipe_radius, -10, True)
+signalresponses.plot_isosurface(responses_combined, x, y, z_new, pipe_radius, -6, True)
+
+#to_plot_x = int(1*len(x)/2)
+#to_plot_y = int(1*len(y)/2)
+#to_plot_z = int(1*len(z_new)/2)
+#signalresponses.plot_slices(responses_combined, x, y, z_new, to_plot_x, to_plot_y, to_plot_z)

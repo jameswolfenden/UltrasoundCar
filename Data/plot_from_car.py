@@ -17,7 +17,7 @@ max_gain=16
 gain_time = []
 # load data
 for sensor_radius in sensor_radii:
-    with open(os.path.join(Path(__file__).resolve().parents[1], os.path.join("Robot", os.path.join("UploadFolder", os.path.join("fullpipe", "scan_"+str(210)+".csv")))), newline='') as f:
+    with open(os.path.join(Path(__file__).resolve().parents[1], os.path.join("Robot", os.path.join("UploadFolder", os.path.join("test1", "scan_data_time_"+str(sensor_radius)+".csv")))), newline='') as f:
         reader = csv.reader(f)
         gain_time_temp = list(reader)
     gain_time_2d = []
@@ -65,9 +65,9 @@ plt.xlabel('Distance (m)')
 plt.ylabel('Signal strength')
 plt.show()
 
-x = np.linspace(-0.17, 0.17, 51)
-y = np.linspace(-0.17, 0.17, 51)
-z = np.linspace(0.01, 0.90, 90) # increase
+x = np.linspace(-0.16, 0.16, 50)
+y = np.linspace(-0.16, 0.16, 50)
+z = np.linspace(0.01, 0.30, 60)
 
 responses = signalresponses.find_saft(x,y,z,[x/100 for x in sensor_radii], sensor_angles, responses_3d, pseudo_signal.distance, True)
 
@@ -82,4 +82,4 @@ to_plot_z = int(1*len(z)/2)
 
 #signalresponses.plot_slices(responses, x, y, z, to_plot_x, to_plot_y, to_plot_z)
 
-signalresponses.plot_isosurface(responses, x, y, z, pipe_radius, -16)
+signalresponses.plot_isosurface(responses, x, y, z, pipe_radius, -8)

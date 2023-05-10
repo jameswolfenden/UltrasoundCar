@@ -27,7 +27,14 @@ plt.figure(figsize=(7,3))
 plt.rcParams["font.family"] = "serif"
 plt.rcParams["font.serif"] = ["CMU Serif"]
 plt.rc('axes', unicode_minus=False)
-plt.plot(time, to_plot/max(to_plot))
+plt.plot(time, to_plot/max(to_plot), label='Experimental Response')
+plt.axvline(x=620, color='k', linestyle='--', linewidth=0.75)
+plt.axvline(x=1410, color='k', linestyle='--', linewidth=0.75)
+plt.plot([500, 855], [0.3655, 0.3655], color='tab:red', linestyle='-', linewidth=1)
+plt.plot([500, 1920], [1, 1], color='tab:red', linestyle='-', linewidth=1)
+plt.plot([], [], color='tab:red', linestyle='-', linewidth=1, label='Peak of Responses')
+plt.plot([], [], color='k', linestyle='--', linewidth=0.75, label='Times of Flight')
+plt.legend(bbox_to_anchor=(0.25, 0.35))
 plt.xlabel('Time (μs)')
 plt.ylabel('Relative Amplitude')
 # set x limits
