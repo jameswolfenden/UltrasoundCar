@@ -31,13 +31,20 @@ for i in range(pressures.shape[1]):
 
 print(peak)
 
+# read in data from csv
+data = pd.read_csv('attenuation.csv')
+
+#first column is distance, second column is peak
+distances = data.iloc[:,0]
+peak = data.iloc[:,1]
+
 
 # plot data, first column is the x axis, second column is the y axis
 plt.figure(figsize=(7,3))
 plt.rcParams["font.family"] = "serif"
 plt.rcParams["font.serif"] = ["CMU Serif"]
 plt.rc('axes', unicode_minus=False)
-plt.plot(distances, peak/peak[-1], label='Peak of Responses')
+plt.plot(distances, peak/peak.iloc[0], label='Peak of Responses')
 
 plt.xlabel('Distance (cm)')
 plt.ylabel('Normalised Acoustic Pressure')
@@ -48,9 +55,9 @@ plt.subplots_adjust(left=0.07, right=0.97, top=0.97, bottom=0.15)
 # work out the attenuation coefficient
 mu = 0.115 # Np/m
 distances = np.linspace(min(distances), max(distances), 100)
-attenuation = np.exp(-mu*distances/100)
+attenuation = np.exp(-mu*distances*2/100)
 plt.plot(distances, attenuation/attenuation[0], label='Attenuation', color='k', linestyle='--', linewidth=0.75)
 plt.legend(loc='lower left')
-plt.ylim(0,1.1)
+#plt.ylim(0,1.1)
 
 plt.show()

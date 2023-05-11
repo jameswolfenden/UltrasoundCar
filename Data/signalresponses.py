@@ -91,7 +91,7 @@ def convert_to_db(responses, *args):
 
 
 def plot_slices(responses, x, y, z, to_plot_x, to_plot_y, to_plot_z):
-    colour_scale = dict(cmin=-25, cmax=np.max(responses), colorscale="Jet")
+    colour_scale = dict(cmin=-16, cmax=np.max(responses), colorscale="Jet")
 
     X_plot, Y_plot = np.meshgrid(x, y)
     Z_plot = np.ones_like(X_plot)*z[to_plot_z]
@@ -115,80 +115,86 @@ def plot_slices(responses, x, y, z, to_plot_x, to_plot_y, to_plot_z):
                        colorbar_len=0.75,
                        **colour_scale),
         scene=dict(xaxis_title='z (cm)', yaxis_title='x (cm)', zaxis_title='y (cm)', xaxis=dict(autorange='reversed')),
-        font=dict(family="verdana", color="Black", size=16))
+        font=dict(family="verdana", color="Black", size=16),
+            scene_camera = dict(eye=dict(x=1, y=-1, z=0.6594586144012361), center=dict(x=-0.05, y=0, z=0), projection=dict(type='orthographic')))
+    fig1.update_layout(scene_aspectmode='data')
+
     fig1.show()
 
-    X_plot, Y_plot = np.meshgrid(x, y)
-    fig2 = go.Figure(
-        frames=[go.Frame(
-            data=[go.Surface(
-                y=X_plot*100, z=Y_plot*100, x=np.ones_like(X_plot)*100 * z[to_plot],
-                surfacecolor=responses[:, :, to_plot].T, **colour_scale),
-                x_slice, y_slice],
-            name=str(to_plot)) for to_plot in range(len(z))])
+    if True:
+        X_plot, Y_plot = np.meshgrid(x, y)
+        fig2 = go.Figure(
+            frames=[go.Frame(
+                data=[go.Surface(
+                    y=X_plot*100, z=Y_plot*100, x=np.ones_like(X_plot)*100 * z[to_plot],
+                    surfacecolor=responses[:, :, to_plot].T, **colour_scale),
+                    x_slice, y_slice],
+                name=str(to_plot)) for to_plot in range(len(z))])
 
-    # Add data to be displayed before animation starts
-    fig2.add_trace(go.Surface(y=X_plot*100, z=Y_plot*100, x=np.zeros_like(
-        X_plot)*100, surfacecolor=responses[:, :, 0].T, **colour_scale))
-    fig2.add_trace(x_slice)
-    fig2.add_trace(y_slice)
+        # Add data to be displayed before animation starts
+        fig2.add_trace(go.Surface(y=X_plot*100, z=Y_plot*100, x=np.zeros_like(
+            X_plot)*100, surfacecolor=responses[:, :, 0].T, **colour_scale))
+        fig2.add_trace(x_slice)
+        fig2.add_trace(y_slice)
 
-    def frame_args(duration):
-        return {
-            "frame": {"duration": duration},
-            "mode": "immediate",
-            "fromcurrent": True,
-            "transition": {"duration": duration, "easing": "linear"},
-        }
+        def frame_args(duration):
+            return {
+                "frame": {"duration": duration},
+                "mode": "immediate",
+                "fromcurrent": True,
+                "transition": {"duration": duration, "easing": "linear"},
+            }
 
-    sliders = [
-        {
-            "pad": {"b": 10, "t": 60},
-            "len": 0.9,
-            "x": 0.1,
-            "y": 0,
-            "steps": [
-                {
-                    "args": [[f.name], frame_args(0)],
-                    "label": str(to_plot),
-                    "method": "animate",
-                }
-                for to_plot, f in enumerate(fig2.frames)
-            ],
-        }
-    ]
-
-    # Layout
-    fig2.update_layout(
-        title='Slices in volumetric data',
-        scene=dict(xaxis_title='z (cm)', yaxis_title='x (cm)', zaxis_title='y (cm)',
-                   xaxis=dict(autorange='reversed')),
-        font=dict(family="verdana", color="Black", size=16),
-        updatemenus=[
+        sliders = [
             {
-                "buttons": [
-                    {
-                        "args": [None, frame_args(50)],
-                        "label": "&#9654;",  # play symbol
-                        "method": "animate",
-                    },
-                    {
-                        "args": [[None], frame_args(0)],
-                        "label": "&#9724;",  # pause symbol
-                        "method": "animate",
-                    },
-                ],
-                "direction": "left",
-                "pad": {"r": 10, "t": 70},
-                "type": "buttons",
+                "pad": {"b": 10, "t": 60},
+                "len": 0.9,
                 "x": 0.1,
                 "y": 0,
+                "steps": [
+                    {
+                        "args": [[f.name], frame_args(0)],
+                        "label": str(to_plot),
+                        "method": "animate",
+                    }
+                    for to_plot, f in enumerate(fig2.frames)
+                ],
             }
-        ],
-        sliders=sliders
-    )
+        ]
 
-    fig2.show()
+        # Layout
+        fig2.update_layout(
+            title='Slices in volumetric data',
+            scene=dict(xaxis_title='z (cm)', yaxis_title='x (cm)', zaxis_title='y (cm)',
+                    xaxis=dict(autorange='reversed')),
+            font=dict(family="verdana", color="Black", size=16),
+            updatemenus=[
+                {
+                    "buttons": [
+                        {
+                            "args": [None, frame_args(50)],
+                            "label": "&#9654;",  # play symbol
+                            "method": "animate",
+                        },
+                        {
+                            "args": [[None], frame_args(0)],
+                            "label": "&#9724;",  # pause symbol
+                            "method": "animate",
+                        },
+                    ],
+                    "direction": "left",
+                    "pad": {"r": 10, "t": 70},
+                    "type": "buttons",
+                    "x": 0.1,
+                    "y": 0,
+                }
+            ],
+            sliders=sliders,
+            scene_camera = dict(eye=dict(x=1, y=-1, z=0.6594586144012361), center=dict(x=-0.05, y=0, z=0), projection=dict(type='orthographic')),
+            scene_aspectmode='data'
+        )
+
+        fig2.show()
 
 
 def plot_isosurface(responses, x, y, z, pipe_radius, isomin=-10, big=False):
@@ -230,22 +236,108 @@ def plot_isosurface(responses, x, y, z, pipe_radius, isomin=-10, big=False):
         opacity=0.1
     )
 
-    x0 = 20  # z
-    y0 = -5  # x
-    z0 = -2  # y
-    x1 = 26
-    y1 = 5
-    z1 = -12
+    z_0 = 55
+    x_0 = -2
+    y_0 = -12
+    z_1 = 57
+    x_1 = 0
+    y_1 = -14
 
+    box1 = create_box(x_0, x_1, y_0, y_1, z_0, z_1)
+
+    z_0 = 100
+    x_0 = -2
+    y_0 = -12
+    z_1 = 102
+    x_1 = 0
+    y_1 = -14
+
+    box2 = create_box(x_0, x_1, y_0, y_1, z_0, z_1)
+
+    z_0 = 145
+    x_0 = 13
+    y_0 = 9
+    z_1 = 149
+    x_1 = 9
+    y_1 = 5
+
+    box3 = create_box(x_0, x_1, y_0, y_1, z_0, z_1)
+
+    z_0 = 200
+    x_0 = -5
+    y_0 = -2
+    z_1 = 206
+    x_1 = 5
+    y_1 = -12
+
+    box4 = create_box(x_0, x_1, y_0, y_1, z_0, z_1)
+
+
+    z_pipe = 0
+    circle_pipe = go.Scatter3d(
+        y=pipe_radius*100 * np.cos(pipe_theta),
+        z=pipe_radius*100 * np.sin(pipe_theta),
+        x=z_pipe * np.ones_like(pipe_theta),
+        mode='lines',
+        line=dict(color='red', width=2),
+        showlegend=False
+    )
+    fig3 = go.Figure(data=[isosrfce, srfc])
+    if big:
+#        camera = dict(eye=dict(x=2.6, y=-1.5, z=2), center=dict(x=0, y=0.2, z=-0.8))
+#        fig3.update_layout(
+#            width=900,
+#            height=700,
+#        )
+        camera = dict(eye=dict(x=1, y=-1, z=0.6594586144012361), center=dict(x=-0.05, y=0, z=0), projection=dict(type='orthographic'))
+        #fig3.update_layout(
+        #    width=900,
+        #    height=500,
+        #)
+        fig3.update_layout(
+            scene=dict(
+                xaxis_title='z (cm)', yaxis_title='x (cm)', zaxis_title='y (cm)',
+                xaxis=dict(autorange='reversed',tick0=0, dtick=10)),
+            font=dict(family="CMU Serif", color="Black", size=12))
+        scale = 118
+    else:
+        #camera = dict(eye=dict(x=1.25, y=-1.25, z=1.25), center=dict(x=0, y=0, z=-0.25))
+        camera = dict(eye=dict(x=1, y=0, z=0), center=dict(x=0, y=0, z=0), projection=dict(type='orthographic'))
+        #camera = dict(eye=dict(x=1, y=-1, z=1), center=dict(x=0, y=0, z=0), projection=dict(type='orthographic'))
+        fig3.update_layout(
+            width=350,
+            height=300,
+        )
+        #fig3.update_layout(
+        #    width=500,
+        #    height=400,
+        #)
+        fig3.update_layout(
+            scene=dict(
+                xaxis_title=' ', yaxis_title='x (cm)', zaxis_title='y (cm)',
+                xaxis_showticklabels=False,
+                xaxis=dict(autorange='reversed')),
+            font=dict(family="CMU Serif", color="Black", size=12))
+        scale =45
+        #scale = 69
+
+    fig3.update_layout(scene_camera=camera)
+    #fig3.update_layout(scene_aspectmode='data')
+    fig3.update_layout(scene_aspectmode='manual', scene_aspectratio=dict(x=len(z)/scale, y=len(y)/scale, z=len(x)/scale))
+    fig3.update_layout(margin=dict(r=0, b=0, l=0, t=0))
+    fig3.write_image("fig3.svg")
+    fig3.show(config = {'toImageButtonOptions': {'format': 'svg', 'filename': 'fig3New', 'height': 700, 'width': 900, 'scale': 1}})
+
+def create_box(x_0, x_1, y_0, y_1, z_0, z_1):
     vertices = np.array([
-        [x0, y0, z0],  # vertex 0
-        [x1, y0, z0],  # vertex 1
-        [x1, y0, z1],  # vertex 2
-        [x0, y0, z1],  # vertex 3
-        [x0, y1, z0],  # vertex 4
-        [x1, y1, z0],  # vertex 5
-        [x1, y1, z1],  # vertex 6
-        [x0, y1, z1],  # vertex 7
+        [z_0, x_0, y_0],  # vertex 0
+        [z_1, x_0, y_0],  # vertex 1
+        [z_1, x_0, y_1],  # vertex 2
+        [z_0, x_0, y_1],  # vertex 3
+        [z_0, x_1, y_0],  # vertex 4
+        [z_1, x_1, y_0],  # vertex 5
+        [z_1, x_1, y_1],  # vertex 6
+        [z_0, x_1, y_1],  # vertex 7
     ])
 
     # define the faces of the box
@@ -271,59 +363,8 @@ def plot_isosurface(responses, x, y, z, pipe_radius, isomin=-10, big=False):
         i=faces[:, 0],
         j=faces[:, 1],
         k=faces[:, 2],
-        color='rgba(128, 128, 128, 0.2)',
+        # green color, 0.4 opacity
+        opacity=0.4,
+        color='green',
     )
-    z_pipe = 0
-    circle_pipe = go.Scatter3d(
-        y=pipe_radius*100 * np.cos(pipe_theta),
-        z=pipe_radius*100 * np.sin(pipe_theta),
-        x=z_pipe * np.ones_like(pipe_theta),
-        mode='lines',
-        line=dict(color='red', width=2),
-        showlegend=False
-    )
-    fig3 = go.Figure(data=[isosrfce, srfc])
-    if big:
-#        camera = dict(eye=dict(x=2.6, y=-1.5, z=2), center=dict(x=0, y=0.2, z=-0.8))
-#        fig3.update_layout(
-#            width=900,
-#            height=700,
-#        )
-        camera = dict(eye=dict(x=1, y=-1, z=0.6594586144012361), center=dict(x=-0.05, y=0, z=0), projection=dict(type='orthographic'))
-        fig3.update_layout(
-            width=900,
-            height=500,
-        )
-        fig3.update_layout(
-            scene=dict(
-                xaxis_title='z (cm)', yaxis_title='x (cm)', zaxis_title='y (cm)',
-                xaxis=dict(autorange='reversed',tick0=0, dtick=10)),
-            font=dict(family="CMU Serif", color="Black", size=12))
-        scale = 118
-    else:
-        #camera = dict(eye=dict(x=1.25, y=-1.25, z=1.25), center=dict(x=0, y=0, z=-0.25))
-        #camera = dict(eye=dict(x=1, y=0, z=0), center=dict(x=0, y=0, z=0), projection=dict(type='orthographic'))
-        camera = dict(eye=dict(x=1, y=-1, z=1), center=dict(x=0, y=0, z=0), projection=dict(type='orthographic'))
-        #fig3.update_layout(
-        #    width=350,
-        #    height=300,
-        #)
-        fig3.update_layout(
-            width=500,
-            height=400,
-        )
-        fig3.update_layout(
-            scene=dict(
-                xaxis_title='z (cm)', yaxis_title='x (cm)', zaxis_title='y (cm)',
-                #xaxis_showticklabels=False,
-                xaxis=dict(autorange='reversed')),
-            font=dict(family="CMU Serif", color="Black", size=12))
-        scale =45
-        scale = 69
-
-    fig3.update_layout(scene_camera=camera)
-    #fig3.update_layout(scene_aspectmode='data')
-    fig3.update_layout(scene_aspectmode='manual', scene_aspectratio=dict(x=len(z)/scale, y=len(y)/scale, z=len(x)/scale))
-    fig3.update_layout(margin=dict(r=0, b=0, l=0, t=0))
-    fig3.write_image("fig3.svg")
-    fig3.show(config = {'toImageButtonOptions': {'format': 'svg', 'filename': 'fig3New', 'height': 700, 'width': 900, 'scale': 1}})
+    return box

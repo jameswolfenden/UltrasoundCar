@@ -25,7 +25,7 @@ for i in range(pressures.shape[1]):
 # find the peak of each pressure after 300 μs
 peak = np.zeros(pressures.shape[1])
 for i in range(pressures.shape[1]):
-    peak[i] = max(abs(pressures.iloc[300:720,i]))
+    peak[i] = max(abs(pressures.iloc[600:,i]))
 
 # plot peak against motion
 plt.figure(figsize=(3.3,3))
@@ -34,7 +34,7 @@ plt.rcParams["font.serif"] = ["CMU Serif"]
 plt.rc('axes', unicode_minus=False)
 plt.plot(motion, peak/max(peak), label='Peak of Responses')
 
-plt.xlabel('Block Height (cm)')
+plt.xlabel('Sludge Blockage Height (cm)')
 plt.ylabel('Normalised Acoustic Pressure')
 plt.xticks(np.arange(0, 15.1, 2.5))
 # set margins
@@ -60,7 +60,7 @@ plt.show()
 # find time to the first part of each pressure after 300 μs greater than half the peak
 timehalf = np.zeros(pressures.shape[1])
 for i in range(pressures.shape[1]):
-    timehalf[i] = time[np.where(abs(pressures.iloc[300:720,i]) > peak[i]*0.1)[0][0]+300]
+    timehalf[i] = time[np.where(abs(pressures.iloc[600:,i]) > peak[i]*0.4)[0][0]+600]
 print(timehalf)
 
 # plot timehalf against motion
@@ -70,8 +70,8 @@ plt.rcParams["font.serif"] = ["CMU Serif"]
 plt.rc('axes', unicode_minus=False)
 plt.plot(motion, timehalf, label='Time to Half Peak')
 
-plt.xlabel('Block Height (cm)')
-plt.ylabel('Time (μs)')
+plt.xlabel('Sludge Blockage Height (cm)')
+plt.ylabel('Time of Flight (μs)')
 plt.xticks(np.arange(0, 15.1, 2.5))
 # set margins
 plt.subplots_adjust(left=0.16, right=0.97, top=0.97, bottom=0.16)
